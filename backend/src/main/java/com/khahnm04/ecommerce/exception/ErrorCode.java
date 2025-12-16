@@ -46,6 +46,7 @@ public enum ErrorCode {
     CATEGORY_PARENT_NOT_EXISTED(1204, "category parent not existed", HttpStatus.CONFLICT),
     CATEGORY_HAS_CHILDREN(1205, "Cannot delete category because it has child categories.", HttpStatus.BAD_REQUEST),
     CANNOT_MOVE_PARENT_TO_CHILD(1206, "Cannot move parent to child", HttpStatus.BAD_REQUEST),
+    DUPLICATE_CATEGORY_PRODUCT(1207, "Duplicate category product", HttpStatus.BAD_REQUEST),
 
     BRAND_NOT_FOUND(1300, "brand not found", HttpStatus.NOT_FOUND),
     BRAND_EXISTED(1301, "brand already existed", HttpStatus.CONFLICT),
@@ -58,6 +59,33 @@ public enum ErrorCode {
 
     PRODUCT_NOT_FOUND(1600, "product not found", HttpStatus.NOT_FOUND),
     PRODUCT_EXISTED(1601, "product already existed", HttpStatus.CONFLICT),
+    ATTRIBUTE_EXISTED(1602, "attribute already existed", HttpStatus.CONFLICT),
+    ATTRIBUTE_NOT_FOUND(1603, "attribute not found", HttpStatus.NOT_FOUND),
+    ATTRIBUTE_ALREADY_SOFT_DELETED(1604, "attribute already soft deleted", HttpStatus.CONFLICT),
+
+    VARIANT_EXISTED(1701, "variant already existed", HttpStatus.CONFLICT),
+    VARIANT_NOT_FOUND(1700, "variant not found", HttpStatus.NOT_FOUND),
+    VARIANT_ALREADY_SOFT_DELETED(1702, "variant already soft deleted", HttpStatus.CONFLICT),
+
+    PRODUCT_VARIANT_NOT_FOUND(1800, "product variant not found", HttpStatus.NOT_FOUND),
+    PRODUCT_VARIANT_EXISTED(1801, "product variant sku already existed", HttpStatus.CONFLICT),
+    PRODUCT_VARIANT_ALREADY_SOFT_DELETED(1802, "product variant already soft deleted", HttpStatus.CONFLICT),
+
+    VARIANT_VALUE_EXISTED(1901, "variant value already existed", HttpStatus.CONFLICT),
+    VARIANT_VALUE_NOT_FOUND(1900, "variant value not found", HttpStatus.NOT_FOUND),
+    VARIANT_VALUE_ALREADY_SOFT_DELETED(1902, "variant value already soft deleted", HttpStatus.CONFLICT),
+
+    PRODUCT_ATTRIBUTE_VALUE_EXISTED(2001, "product attribute value already existed", HttpStatus.CONFLICT),
+    PRODUCT_ATTRIBUTE_VALUE_NOT_FOUND(2000, "product attribute value not found", HttpStatus.NOT_FOUND),
+
+    PRODUCT_FAQ_NOT_FOUND(2100, "product faq not found", HttpStatus.NOT_FOUND),
+    PRODUCT_FAQ_ALREADY_SOFT_DELETED(2101, "product faq already soft deleted", HttpStatus.CONFLICT),
+
+    WISHLIST_ALREADY_EXISTED(2200, "Product already in wishlist", HttpStatus.CONFLICT),
+    WISHLIST_NOT_FOUND(2201, "Product not found in wishlist", HttpStatus.NOT_FOUND),
+
+    PRODUCT_QUESTION_NOT_FOUND(2300, "product question not found", HttpStatus.NOT_FOUND),
+    INVALID_REPLY_TARGET(2301, "Invalid reply target", HttpStatus.BAD_REQUEST),
     ;
 
     private final Integer code;

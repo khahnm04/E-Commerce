@@ -12,7 +12,6 @@ import com.khahnm04.ecommerce.repository.RoleRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,16 +26,13 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public RoleResponse createRole(RoleRequest request) {
-        if (CollectionUtils.isEmpty(request.getPermissions())) {
-            throw new AppException(ErrorCode.PERMISSION_REQUIRED);
-        }
         if (roleRepository.existsByName(request.getName())) {
             throw new AppException(ErrorCode.ROLE_EXISTED);
         }
         Role role = roleMapper.toRole(request);
         assignPermissionsToRole(role, request.getPermissions());
         role = roleRepository.save(role);
-        log.info("Role created with name = {}", role.getName());
+        log.info("UserRole created with name = {}", role.getName());
         return roleMapper.toRoleResponse(role);
     }
 
@@ -49,36 +45,28 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleResponse updateRole(Long id, RoleRequest request) {
-        Role role = getRoleById(id);
-        if (CollectionUtils.isEmpty(request.getPermissions())) {
-            throw new AppException(ErrorCode.PERMISSION_REQUIRED);
-        }
-        if (!Objects.equals(role.getName(), request.getName())
-                && roleRepository.existsByName(request.getName())) {
-            throw new AppException(ErrorCode.ROLE_EXISTED);
-        }
+    public RoleResponse updateRole(String name, RoleRequest request) {
+        Role role = getRoleById(name);
         roleMapper.updateRole(role, request);
         assignPermissionsToRole(role, request.getPermissions());
         role = roleRepository.save(role);
-        log.info("Role updated successfully with id = {}", id);
+        log.info("UserRole updated successfully with id = {}", name);
         return roleMapper.toRoleResponse(role);
     }
 
     @Override
-    public void deleteRole(Long id) {
-        getRoleById(id);
-        roleRepository.deleteById(id);
-        log.info("Role deleted successfully with id = {}", id);
+    public void deleteRole(String name) {
+        roleRepository.delete(getRoleById(name));
+        log.info("UserRole deleted successfully with name: {}", name);
     }
 
-    private Role getRoleById(Long id) {
-        return roleRepository.findById(id)
+    private Role getRoleById(String name) {
+        return roleRepository.findById(name)
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
     }
 
-    private void assignPermissionsToRole(Role role, Set<Long> permissionIds) {
-        Set<Permission> permissions = Optional.ofNullable(permissionIds)
+    private void assignPermissionsToRole(Role role, Set<String> permissionNames) {
+        Set<Permission> permissions = Optional.ofNullable(permissionNames)
                 .orElseGet(Collections::emptySet)
                 .stream()
                 .map(permissionId -> permissionRepository.findById(permissionId)

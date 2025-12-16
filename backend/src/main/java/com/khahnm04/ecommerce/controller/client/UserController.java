@@ -10,9 +10,7 @@ import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @Slf4j
@@ -38,16 +36,6 @@ public class UserController {
         return ApiResponse.<UserProfileResponse>builder()
                 .data(userService.updateProfile(request))
                 .message("updated my profile successfully")
-                .build();
-    }
-
-    @PatchMapping(value = "/profile/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ApiResponse<Void> uploadAvatar(
-            @RequestPart(value = "avatar") MultipartFile file
-    ) {
-        userService.uploadAvatar(file);
-        return ApiResponse.<Void>builder()
-                .message("upload avatar successfully")
                 .build();
     }
 

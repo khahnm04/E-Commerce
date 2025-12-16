@@ -10,6 +10,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class LoginResponse implements Serializable {
 
-    private Long userId;
+    private Long id;
+    private String fullName;
 
 }

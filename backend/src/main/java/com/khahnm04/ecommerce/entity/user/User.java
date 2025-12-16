@@ -1,15 +1,16 @@
 package com.khahnm04.ecommerce.entity.user;
 
-import com.khahnm04.ecommerce.common.enums.GenderEnum;
-import com.khahnm04.ecommerce.common.enums.StatusEnum;
+import com.khahnm04.ecommerce.common.enums.AuthProvider;
+import com.khahnm04.ecommerce.common.enums.Gender;
+import com.khahnm04.ecommerce.common.enums.UserStatus;
 import com.khahnm04.ecommerce.entity.BaseEntity;
-import com.khahnm04.ecommerce.entity.order.Order;
-import com.khahnm04.ecommerce.entity.product.ProductQuestion;
 import com.khahnm04.ecommerce.entity.auth.Role;
+import com.khahnm04.ecommerce.entity.product.Wishlist;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,62 +27,79 @@ import java.util.Set;
 @Table(name = "users")
 public class User extends BaseEntity<Long> implements UserDetails {
 
-    @Column(name = "full_name", nullable = false)
-    private String fullName;
-
     @Column(name = "email", unique = true)
     private String email;
 
-    @Column(name = "phone_number", unique = true, length = 20)
+    @Column(name = "phone_number", unique = true, length = 15)
     private String phoneNumber;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password", length = 500)
     private String password;
 
-    @Column(name = "avatar", columnDefinition = "TEXT")
-    private String avatar;
+    @Column(name = "full_name", nullable = false)
+    private String fullName;
 
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
+    @Builder.Default
     @ColumnDefault("'UNKNOWN'")
     @Column(name = "gender")
     @Enumerated(EnumType.STRING)
-    private GenderEnum gender = GenderEnum.UNKNOWN;
+    private Gender gender = Gender.UNKNOWN;
 
+    @ColumnDefault("'LOCAL'")
+    @Column(name = "provider")
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private AuthProvider provider = AuthProvider.LOCAL;
+
+    @Column(name = "provider_id")
+    private String providerId;
+
+    @Builder.Default
+    @Column(name = "is_email_verified")
+    private Boolean isEmailVerified = false;
+
+    @Builder.Default
+    @Column(name = "is_phone_verified")
+    private Boolean isPhoneVerified = false;
+
+    @Builder.Default
     @ColumnDefault("'ACTIVE'")
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private StatusEnum status = StatusEnum.ACTIVE;
+    private UserStatus status = UserStatus.ACTIVE;
 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
     @ManyToMany
     @JoinTable(
-        name = "role_users",
+        name = "user_roles",
         joinColumns = @JoinColumn(name = "user_id"),
-        inverseJoinColumns = @JoinColumn(name = "role_id")
+        inverseJoinColumns = @JoinColumn(name = "role_name")
     )
+    @OrderBy("name ASC")
     private Set<Role> roles;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<Address> addresses;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<Order> orders;
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<ProductQuestion> productQuestions;
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Wishlist> wishlists;
 
     @Override
     public String getUsername() {
-        return "";
+        return this.phoneNumber;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        if (roles == null) return List.of();
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.getName()))
+                .toList();
     }
 
     @Override
@@ -91,7 +109,7 @@ public class User extends BaseEntity<Long> implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
+        return this.status != UserStatus.LOCKED;
     }
 
     @Override
@@ -101,7 +119,7 @@ public class User extends BaseEntity<Long> implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return this.status == UserStatus.ACTIVE;
     }
 
 }

@@ -9,7 +9,6 @@ import org.mapstruct.*;
 public interface NewsMapper {
 
     @Mapping(target = "image", ignore = true)
-    @Mapping(target = "status", constant = "PENDING")
     News fromNewsRequestToNews(NewsRequest request);
 
     @Mapping(target = "image", ignore = true)

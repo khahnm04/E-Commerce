@@ -8,9 +8,10 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface AddressMapper {
 
+    @Mapping(target = "addressType", constant = "HOME")
+    @Mapping(target = "isDefault", constant = "false")
     Address toAddress(AddressUserRequest request);
 
-    @Mapping(source = "user.id", target = "userId")
     AddressUserResponse toAddressResponse(Address address);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

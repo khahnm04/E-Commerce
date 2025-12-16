@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import java.io.Serializable;
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class BaseResponse<T> implements Serializable {
 
     private T id;

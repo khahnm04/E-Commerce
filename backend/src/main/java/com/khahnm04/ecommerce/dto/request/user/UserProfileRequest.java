@@ -1,19 +1,19 @@
 package com.khahnm04.ecommerce.dto.request.user;
 
-import com.khahnm04.ecommerce.common.enums.GenderEnum;
+import com.khahnm04.ecommerce.common.enums.Gender;
 import com.khahnm04.ecommerce.common.validation.email.ValidEmail;
 import com.khahnm04.ecommerce.common.validation.enums.ValidEnum;
 import com.khahnm04.ecommerce.common.validation.phone.ValidPhoneNumber;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import java.io.Serializable;
 import java.time.LocalDate;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserProfileRequest implements Serializable {
 
     @NotBlank(message = "fullName cannot be blank")
@@ -28,7 +28,7 @@ public class UserProfileRequest implements Serializable {
 
     private LocalDate dateOfBirth;
 
-    @ValidEnum(name = "gender", enumClass = GenderEnum.class)
-    private GenderEnum gender;
+    @ValidEnum(name = "gender", enumClass = Gender.class)
+    private String gender;
 
 }

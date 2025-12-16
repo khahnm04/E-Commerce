@@ -1,14 +1,16 @@
 package com.khahnm04.ecommerce.dto.request.product;
 
-import com.khahnm04.ecommerce.common.enums.ProductStatusEnum;
+import com.khahnm04.ecommerce.common.enums.ProductStatus;
 import com.khahnm04.ecommerce.common.validation.enums.ValidEnum;
-import com.khahnm04.ecommerce.common.validation.upload.NotEmptyFile;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.springframework.web.multipart.MultipartFile;
 import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -17,29 +19,48 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class ProductRequest implements Serializable {
 
-    @NotBlank(message = "slug cannot be blank")
-    private String slug;
-
     @NotBlank(message = "name cannot be blank")
     private String name;
+
+    @NotBlank(message = "slug cannot be blank")
+    private String slug;
 
     @NotNull(message = "price is required")
     @Min(value = 0, message = "price must be >= 0")
     private Long price;
 
-    @NotNull(message = "oldPrice is required")
     @Min(value = 0, message = "oldPrice must be >= 0")
     private Long oldPrice;
-
-    @NotEmptyFile(message = "image cannot be blank")
-    private MultipartFile image;
 
     @NotBlank(message = "description cannot be blank")
     private String description;
 
-    @ValidEnum(name = "status", enumClass = ProductStatusEnum.class)
+    @ValidEnum(name = "status", enumClass = ProductStatus.class)
     private String status;
 
+    @NotNull(message = "brandId cannot be null")
     private Long brandId;
+
+    @NotNull(message = "categoryIds cannot be null or blank")
+    private Set<Long> categoryIds;
+
+    @NotEmpty(message = "images cannot be blank")
+    private List<String> images;
+
+    @Valid
+    @NotEmpty(message = "attributes cannot be blank")
+    private List<ProductAttributeRequest> attributes;
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ProductAttributeRequest {
+        @NotNull(message = "Attribute ID is required")
+        private Long attributeId;
+
+        @NotBlank(message = "Attribute value cannot be blank")
+        private String value;
+    }
 
 }

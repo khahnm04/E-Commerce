@@ -1,22 +1,29 @@
 package com.khahnm04.ecommerce.dto.response.brand;
 
-import com.khahnm04.ecommerce.common.enums.StatusEnum;
-import com.khahnm04.ecommerce.dto.response.BaseResponse;
+import com.khahnm04.ecommerce.common.enums.BrandStatus;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BrandResponse extends BaseResponse<Long> {
+public class BrandResponse implements Serializable {
 
-    private String slug;
+    private Long id;
     private String name;
+    private String slug;
     private String description;
-    private String country;
     private String logo;
-    private StatusEnum status;
+    private String country;
+    private BrandStatus status;
+    private LocalDateTime createdAt;
+    private Long createdBy;
+    private LocalDateTime updatedAt;
+    private Long updatedBy;
+    private LocalDateTime deletedAt;
 
 }

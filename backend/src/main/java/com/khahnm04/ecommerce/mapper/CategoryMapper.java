@@ -9,7 +9,6 @@ import org.mapstruct.*;
 public interface CategoryMapper {
 
     @Mapping(target = "image", ignore = true)
-    @Mapping(target = "status", constant = "ACTIVE")
     Category fromCategoryRequestToCategory(CategoryRequest request);
 
     default Long getParentId(Category category) {

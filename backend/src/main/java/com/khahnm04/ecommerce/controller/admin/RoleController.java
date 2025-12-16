@@ -36,22 +36,22 @@ public class RoleController {
                 .build();
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{name}")
     ApiResponse<RoleResponse> updateRole(
-        @PathVariable Long id,
+        @PathVariable String name,
         @Valid @RequestBody RoleRequest request
     ) {
         return ApiResponse.<RoleResponse>builder()
-                .data(roleService.updateRole(id, request))
+                .data(roleService.updateRole(name, request))
                 .message("role updated successfully")
                 .build();
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{name}")
     ApiResponse<Void> deleteRole(
-        @PathVariable Long id
+        @PathVariable String name
     ) {
-        roleService.deleteRole(id);
+        roleService.deleteRole(name);
         return ApiResponse.<Void>builder()
                 .message("role deleted successfully")
                 .build();

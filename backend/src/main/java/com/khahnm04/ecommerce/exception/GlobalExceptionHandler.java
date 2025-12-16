@@ -94,4 +94,29 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
+    @ExceptionHandler(value = ServiceValidationException.class)
+    ResponseEntity<ErrorResponse> handlingServiceValidationException(ServiceValidationException exception, HttpServletRequest request) {
+
+        List<ErrorResponse.FieldErrorResponse> errors = exception.getErrors().entrySet()
+                .stream()
+                .map(entry -> ErrorResponse.FieldErrorResponse.builder()
+                        .field(entry.getKey())
+                        .message(entry.getValue())
+                        .build())
+                .toList();
+
+        ErrorCode errorCode = ErrorCode.VALIDATION_EXCEPTION;
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .success(false)
+                .code(errorCode.getCode())
+                .message(errorCode.getMessage())
+                .path(request.getRequestURI())
+                .method(request.getMethod())
+                .errors(errors)
+                .build();
+
+        return ResponseEntity.badRequest().body(errorResponse);
+    }
+
 }

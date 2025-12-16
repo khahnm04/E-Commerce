@@ -4,6 +4,7 @@ import com.khahnm04.ecommerce.dto.request.brand.BrandRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.brand.BrandResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
+import com.khahnm04.ecommerce.dto.response.product.ProductResponse;
 import com.khahnm04.ecommerce.service.brand.BrandService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class BrandController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<BrandResponse> createBrand(
-        @Valid @ModelAttribute BrandRequest request
+            @Valid @ModelAttribute BrandRequest request
     ) {
         return ApiResponse.<BrandResponse>builder()
                 .data(brandService.createBrand(request))
@@ -36,9 +37,9 @@ public class BrandController {
 
     @GetMapping
     public ApiResponse<List<BrandResponse>> getAllBrands(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "createdAt,desc") String sort
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort
     ) {
         PageResponse<BrandResponse> pageResponse = brandService.getAllBrands(page - 1, size, sort);
         return ApiResponse.<List<BrandResponse>>builder()
@@ -56,6 +57,21 @@ public class BrandController {
     ) {
         PageResponse<BrandResponse> pageResponse = brandService.getAllDeletedBrands(page - 1, size, sort);
         return ApiResponse.<List<BrandResponse>>builder()
+                .data(pageResponse.getData())
+                .meta(pageResponse.getMeta())
+                .message("get all soft deleted brands successfully")
+                .build();
+    }
+
+    @GetMapping("/{id}/products")
+    public ApiResponse<List<ProductResponse>> getAllProductsByBrandId(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort,
+            @PathVariable Long id
+    ) {
+        PageResponse<ProductResponse> pageResponse = brandService.getAllProductsByBrandId(page - 1, size, sort, id);
+        return ApiResponse.<List<ProductResponse>>builder()
                 .data(pageResponse.getData())
                 .meta(pageResponse.getMeta())
                 .message("get all soft deleted brands successfully")
@@ -84,9 +100,9 @@ public class BrandController {
 
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<BrandResponse> updateBrand(
-        @PathVariable Long id,
-        @Valid BrandRequest request,
-        @RequestPart(value = "logo", required = false) MultipartFile file
+            @PathVariable Long id,
+            @Valid BrandRequest request,
+            @RequestPart(value = "logo", required = false) MultipartFile file
     ) {
         return ApiResponse.<BrandResponse>builder()
                 .data(brandService.updateBrand(id, request, file))
@@ -107,7 +123,7 @@ public class BrandController {
 
     @DeleteMapping("/{id}/soft-delete")
     public ApiResponse<Void> softDeleteBrand(
-        @PathVariable Long id
+            @PathVariable Long id
     ) {
         brandService.softDeleteBrand(id);
         return ApiResponse.<Void>builder()
@@ -117,7 +133,7 @@ public class BrandController {
 
     @DeleteMapping("/{id}")
     public ApiResponse<Void> deleteBrand(
-        @PathVariable Long id
+            @PathVariable Long id
     ) {
         brandService.deleteBrand(id);
         return ApiResponse.<Void>builder()

@@ -4,8 +4,6 @@ import com.khahnm04.ecommerce.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 @Entity
 @Getter
 @Setter
@@ -18,11 +16,15 @@ public class VariantValue extends BaseEntity<Long> {
     @Column(name = "value", nullable = false)
     private String value;
 
+    @Column(name = "code")
+    private String code;
+
+    @Column(name = "display_order")
+    @Builder.Default
+    private Integer displayOrder = 0;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "variant_id", nullable = false)
     private Variant variant;
-
-    @OneToMany(mappedBy = "variantValue", fetch = FetchType.LAZY)
-    private List<ProductVariantValue> productVariantValues;
 
 }

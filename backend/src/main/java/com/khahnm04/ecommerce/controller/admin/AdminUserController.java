@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.controller.admin;
 
-import com.khahnm04.ecommerce.common.enums.StatusEnum;
+import com.khahnm04.ecommerce.common.enums.UserStatus;
 import com.khahnm04.ecommerce.dto.request.user.UserRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
@@ -11,11 +11,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @RestController
@@ -25,10 +22,10 @@ public class AdminUserController {
 
     private final UserService userService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<UserResponse> createUser(
-            @Valid @ModelAttribute UserRequest request
+            @Valid @RequestBody UserRequest request
     ) {
         return ApiResponse.<UserResponse>builder()
                 .data(userService.createUser(request))
@@ -60,7 +57,7 @@ public class AdminUserController {
         return ApiResponse.<List<UserResponse>>builder()
                 .meta(pageResponse.getMeta())
                 .data(pageResponse.getData())
-                .message("get all users successfully")
+                .message("get all users deleted successfully")
                 .build();
     }
 
@@ -84,15 +81,14 @@ public class AdminUserController {
                 .build();
     }
 
-    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/{id}")
     public ApiResponse<UserResponse> updateUser(
             @PathVariable Long id,
-            @Valid @RequestPart("data") UserRequest request,
-            @RequestPart(value = "avatar", required = false) MultipartFile file
+            @Valid @RequestBody UserRequest request
 
     ) {
         return ApiResponse.<UserResponse>builder()
-                .data(userService.updateUser(id, request, file))
+                .data(userService.updateUser(id, request))
                 .message("user updated successfully")
                 .build();
     }
@@ -100,22 +96,11 @@ public class AdminUserController {
     @PatchMapping("/{id}/status")
     public ApiResponse<Void> updateUserStatus(
             @PathVariable Long id,
-            @RequestParam StatusEnum status
+            @RequestParam UserStatus status
     ) {
         userService.updateUserStatus(id, status);
         return ApiResponse.<Void>builder()
                 .message("user status updated successfully")
-                .build();
-    }
-
-    @PatchMapping("/{id}/role")
-    public ApiResponse<Void> updateUserRole(
-            @PathVariable Long id,
-            @RequestParam Set<Long> roles
-    ) {
-        userService.updateUserRole(id, roles);
-        return ApiResponse.<Void>builder()
-                .message("user role updated successfully")
                 .build();
     }
 

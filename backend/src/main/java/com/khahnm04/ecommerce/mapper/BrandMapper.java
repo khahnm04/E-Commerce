@@ -9,8 +9,7 @@ import org.mapstruct.*;
 public interface BrandMapper {
 
     @Mapping(target = "logo", ignore = true)
-    @Mapping(target = "status", constant = "ACTIVE")
-    Brand fromBrandRequesttoBrand(BrandRequest request);
+    Brand fromBrandRequestToBrand(BrandRequest request);
 
     @Mapping(target = "logo", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

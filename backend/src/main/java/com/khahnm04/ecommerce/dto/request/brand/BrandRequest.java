@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.dto.request.brand;
 
-import com.khahnm04.ecommerce.common.enums.StatusEnum;
+import com.khahnm04.ecommerce.common.enums.BrandStatus;
 import com.khahnm04.ecommerce.common.validation.enums.ValidEnum;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -14,11 +14,11 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class BrandRequest implements Serializable {
 
-    @NotBlank(message = "slug cannot be blank")
-    private String slug;
-
     @NotBlank(message = "name cannot be blank")
     private String name;
+
+    @NotBlank(message = "slug cannot be blank")
+    private String slug;
 
     private String description;
 
@@ -26,7 +26,7 @@ public class BrandRequest implements Serializable {
 
     private String country;
 
-    @ValidEnum(name = "status", enumClass = StatusEnum.class)
+    @ValidEnum(name = "status", enumClass = BrandStatus.class)
     private String status;
 
 }

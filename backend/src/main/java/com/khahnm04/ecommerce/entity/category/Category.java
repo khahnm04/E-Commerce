@@ -1,13 +1,13 @@
 package com.khahnm04.ecommerce.entity.category;
 
-import com.khahnm04.ecommerce.common.enums.CategoryStatusEnum;
+import com.khahnm04.ecommerce.common.enums.CategoryStatus;
 import com.khahnm04.ecommerce.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import java.util.List;
 
 @Entity
 @Getter
@@ -15,14 +15,15 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@DynamicUpdate
 @Table(name = "categories")
 public class Category extends BaseEntity<Long> {
 
-    @Column(name = "slug", nullable = false, unique = true)
-    private String slug;
-
     @Column(name = "name", nullable = false, unique = true)
     private String name;
+
+    @Column(name = "slug", nullable = false, unique = true)
+    private String slug;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
@@ -33,17 +34,15 @@ public class Category extends BaseEntity<Long> {
     @Column(name = "path")
     private String path;
 
+    @Builder.Default
     @ColumnDefault("'ACTIVE'")
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
-    private CategoryStatusEnum status = CategoryStatusEnum.ACTIVE;
+    private CategoryStatus status = CategoryStatus.ACTIVE;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     @JoinColumn(name = "parent_id")
     private Category parent;
-
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    private List<CategoryProduct> categoryProducts;
 
 }

@@ -4,8 +4,6 @@ import com.khahnm04.ecommerce.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
 @Entity
 @Getter
 @Setter
@@ -15,10 +13,16 @@ import java.util.List;
 @Table(name = "attributes")
 public class Attribute extends BaseEntity<Long> {
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "attribute", fetch = FetchType.LAZY)
-    private List<ProductAttributeValue> productAttributeValues;
+    @Column(name = "code", nullable = false, unique = true)
+    private String code;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    private String description;
+
+//    @OneToMany(mappedBy = "attribute", fetch = FetchType.LAZY)
+//    private List<ProductAttributeValue> productAttributeValues;
 
 }

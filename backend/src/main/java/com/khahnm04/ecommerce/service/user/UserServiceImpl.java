@@ -11,7 +11,7 @@ import com.khahnm04.ecommerce.dto.response.user.UserResponse;
 import com.khahnm04.ecommerce.entity.user.Address;
 import com.khahnm04.ecommerce.entity.auth.Role;
 import com.khahnm04.ecommerce.entity.user.User;
-import com.khahnm04.ecommerce.common.enums.StatusEnum;
+import com.khahnm04.ecommerce.common.enums.UserStatus;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.AddressMapper;
@@ -19,7 +19,6 @@ import com.khahnm04.ecommerce.mapper.UserMapper;
 import com.khahnm04.ecommerce.repository.AddressRepository;
 import com.khahnm04.ecommerce.repository.RoleRepository;
 import com.khahnm04.ecommerce.repository.UserRepository;
-import com.khahnm04.ecommerce.service.upload.CloudinaryService;
 import com.khahnm04.ecommerce.common.util.SecurityUtils;
 import com.khahnm04.ecommerce.common.util.SortUtils;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,7 +40,6 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
-    private final CloudinaryService cloudinaryService;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final AddressRepository addressRepository;
@@ -59,7 +56,6 @@ public class UserServiceImpl implements UserService {
 
         User user = userMapper.fromUserRequestToUser(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setAvatar(cloudinaryService.upload(request.getAvatar()));
         assignRoleToUser(user, request.getRoles());
 
         User savedUser = userRepository.save(user);
@@ -98,7 +94,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse updateUser(Long id, UserRequest request, MultipartFile file) {
+    public UserResponse updateUser(Long id, UserRequest request) {
         User user = getUserById(id);
 
         if (!Objects.equals(user.getPhoneNumber(), request.getPhoneNumber())
@@ -115,29 +111,17 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         assignRoleToUser(user, request.getRoles());
 
-        if (file != null && !file.isEmpty()) {
-            user.setAvatar(cloudinaryService.upload(file));
-        }
-
         User savedUser = userRepository.save(user);
         log.info("User updated with Id = {}", id);
         return buildUserResponse(savedUser);
     }
 
     @Override
-    public void updateUserStatus(Long id, StatusEnum status) {
+    public void updateUserStatus(Long id, UserStatus status) {
         User user = getUserById(id);
         user.setStatus(status);
         userRepository.save(user);
         log.info("User status updated with Id = {}", id);
-    }
-
-    @Override
-    public void updateUserRole(Long id, Set<Long> roles) {
-        User user = getUserById(id);
-        assignRoleToUser(user, roles);
-        userRepository.save(user);
-        log.info("User role updated with Id = {}", id);
     }
 
     @Override
@@ -158,8 +142,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserProfileResponse getProfile() {
-        User user = getCurrentUser();
-        return userMapper.fromUserToProfileResponse(user);
+        return userMapper.fromUserToProfileResponse(getCurrentUser());
     }
 
     @Override
@@ -181,14 +164,6 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
         log.info("Updated profile user with id {}", savedUser.getId());
         return userMapper.fromUserToProfileResponse(savedUser);
-    }
-
-    @Override
-    public void uploadAvatar(MultipartFile file) {
-        User user = getCurrentUser();
-        user.setAvatar(cloudinaryService.upload(file));
-        userRepository.save(user);
-        log.info("Updated avatar user with Id = {}", user.getId());
     }
 
     @Override
@@ -246,6 +221,12 @@ public class UserServiceImpl implements UserService {
         log.info("Address deleted with id {}", id);
     }
 
+    @Override
+    public User getCurrentUser() {
+        return userRepository.findByIdentifier(SecurityUtils.extractPrincipal())
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+    }
+
     private User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
@@ -256,19 +237,14 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
     }
 
-    private void assignRoleToUser(User user, Set<Long> roleIds) {
-        Set<Role> roles = Optional.ofNullable(roleIds)
+    private void assignRoleToUser(User user, Set<String> roleNames) {
+        Set<Role> roles = Optional.ofNullable(roleNames)
                 .orElseGet(Collections::emptySet)
                 .stream()
-                .map(roleId -> roleRepository.findById(roleId)
+                .map(roleName -> roleRepository.findById(roleName)
                         .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND)))
                 .collect(Collectors.toSet());
         user.setRoles(roles);
-    }
-
-    private User getCurrentUser() {
-        return userRepository.findByIdentifier(SecurityUtils.extractPrincipal())
-                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
     }
 
     private UserResponse buildUserResponse(User user) {

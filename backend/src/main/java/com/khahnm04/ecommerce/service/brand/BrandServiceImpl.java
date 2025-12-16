@@ -1,16 +1,20 @@
 package com.khahnm04.ecommerce.service.brand;
 
-import com.khahnm04.ecommerce.common.enums.StatusEnum;
+import com.khahnm04.ecommerce.common.enums.BrandStatus;
+import com.khahnm04.ecommerce.common.util.SortUtils;
 import com.khahnm04.ecommerce.dto.request.brand.BrandRequest;
-import com.khahnm04.ecommerce.dto.response.brand.BrandResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
+import com.khahnm04.ecommerce.dto.response.brand.BrandResponse;
+import com.khahnm04.ecommerce.dto.response.product.ProductResponse;
 import com.khahnm04.ecommerce.entity.brand.Brand;
+import com.khahnm04.ecommerce.entity.product.Product;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.BrandMapper;
+import com.khahnm04.ecommerce.mapper.ProductMapper;
 import com.khahnm04.ecommerce.repository.BrandRepository;
+import com.khahnm04.ecommerce.repository.ProductRepository;
 import com.khahnm04.ecommerce.service.upload.CloudinaryService;
-import com.khahnm04.ecommerce.common.util.SortUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -29,7 +33,9 @@ public class BrandServiceImpl implements BrandService {
 
     private final BrandRepository brandRepository;
     private final BrandMapper brandMapper;
+    private final ProductMapper productMapper;
     private final CloudinaryService cloudinaryService;
+    private final ProductRepository productRepository;
 
     @Override
     public BrandResponse createBrand(BrandRequest request) {
@@ -40,7 +46,7 @@ public class BrandServiceImpl implements BrandService {
             throw new AppException(ErrorCode.BRAND_EXISTED);
         }
 
-        Brand brand = brandMapper.fromBrandRequesttoBrand(request);
+        Brand brand = brandMapper.fromBrandRequestToBrand(request);
         brand.setLogo(cloudinaryService.upload(request.getLogo()));
 
         Brand savedBrand = brandRepository.save(brand);
@@ -51,16 +57,25 @@ public class BrandServiceImpl implements BrandService {
     @Override
     public PageResponse<BrandResponse> getAllBrands(int page, int size, String sort) {
         Pageable pageable = PageRequest.of(page, size, SortUtils.parseSort(sort));
-        Page<Brand> userPage = brandRepository.findAllByDeletedAtIsNull(pageable);
-        Page<BrandResponse> dtoPage = userPage.map(brandMapper::toBrandResponse);
+        Page<Brand> brandPage = brandRepository.findAllByDeletedAtIsNull(pageable);
+        Page<BrandResponse> dtoPage = brandPage.map(brandMapper::toBrandResponse);
         return PageResponse.fromPage(dtoPage);
     }
 
     @Override
     public PageResponse<BrandResponse> getAllDeletedBrands(int page, int size, String sort) {
         Pageable pageable = PageRequest.of(page, size, SortUtils.parseSort(sort));
-        Page<Brand> userPage = brandRepository.findAllByDeletedAtIsNotNull(pageable);
-        Page<BrandResponse> dtoPage = userPage.map(brandMapper::toBrandResponse);
+        Page<Brand> brandPage = brandRepository.findAllByDeletedAtIsNotNull(pageable);
+        Page<BrandResponse> dtoPage = brandPage.map(brandMapper::toBrandResponse);
+        return PageResponse.fromPage(dtoPage);
+    }
+
+    @Override
+    public PageResponse<ProductResponse> getAllProductsByBrandId(int page, int size, String sort, Long id) {
+        getBrandById(id);
+        Pageable pageable = PageRequest.of(page, size, SortUtils.parseSort(sort));
+        Page<Product> productPage = productRepository.findAllByBrandId(id, pageable);
+        Page<ProductResponse> dtoPage = productPage.map(productMapper::fromProductToProductResponse);
         return PageResponse.fromPage(dtoPage);
     }
 
@@ -99,13 +114,13 @@ public class BrandServiceImpl implements BrandService {
     public void updateBrandStatus(Long id, String status) {
         Brand brand = getBrandById(id);
 
-        boolean isValid = Arrays.stream(StatusEnum.values())
+        boolean isValid = Arrays.stream(BrandStatus.values())
                 .anyMatch(e -> e.name().equalsIgnoreCase(status));
         if (!isValid) {
             throw new AppException(ErrorCode.INVALID_ENUM_VALUE);
         }
 
-        brand.setStatus(StatusEnum.valueOf(status));
+        brand.setStatus(BrandStatus.valueOf(status));
         brandRepository.save(brand);
         log.info("Updated status brand with id = {}", brand.getId());
     }

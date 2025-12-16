@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.service.auth;
 
 import com.khahnm04.ecommerce.common.constant.TokenConstants;
-import com.khahnm04.ecommerce.common.enums.RoleEnum;
+import com.khahnm04.ecommerce.common.enums.UserRole;
 import com.khahnm04.ecommerce.config.CookieProperties;
 import com.khahnm04.ecommerce.dto.request.auth.LoginRequest;
 import com.khahnm04.ecommerce.dto.request.auth.RegisterRequest;
@@ -57,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
         );
 
         validators.forEach((predicate, error) -> {
-            if (predicate.apply(request)) {
+            if (Boolean.TRUE.equals(predicate.apply(request))) {
                 throw new AppException(error);
             }
         });
@@ -65,7 +65,7 @@ public class AuthServiceImpl implements AuthService {
         User newUser = userMapper.fromRegisterRequestToUser(request);
 
         Set<Role> roles = new HashSet<>();
-        roleRepository.findByName(RoleEnum.USER.name()).ifPresent(roles::add);
+        roleRepository.findByName(UserRole.USER.name()).ifPresent(roles::add);
         newUser.setRoles(roles);
         newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
 
@@ -100,7 +100,8 @@ public class AuthServiceImpl implements AuthService {
 
         log.info("User with id = {} has been authenticated", user.getId());
         return LoginResponse.builder()
-                .userId(user.getId())
+                .id(user.getId())
+                .fullName(user.getFullName())
                 .build();
     }
 

@@ -1,10 +1,10 @@
 package com.khahnm04.ecommerce.dto.response.user;
 
-import com.khahnm04.ecommerce.common.enums.GenderEnum;
-import com.khahnm04.ecommerce.common.enums.StatusEnum;
-import com.khahnm04.ecommerce.dto.response.BaseResponse;
+import com.khahnm04.ecommerce.common.enums.Gender;
+import com.khahnm04.ecommerce.common.enums.UserStatus;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -14,16 +14,21 @@ import java.util.Set;
 @SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserResponse extends BaseResponse<Long> {
+public class UserResponse implements Serializable {
 
+    private Long id;
     private String fullName;
     private String email;
     private String phoneNumber;
-    private String avatar;
     private LocalDate dateOfBirth;
-    private GenderEnum gender;
-    private StatusEnum status;
+    private Gender gender;
+    private UserStatus status;
     private LocalDateTime lastLoginAt;
     private Set<String> roles;
+    private LocalDateTime createdAt;
+    private Long createdBy;
+    private LocalDateTime updatedAt;
+    private Long updatedBy;
+    private LocalDateTime deletedAt;
 
 }

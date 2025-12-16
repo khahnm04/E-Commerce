@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.entity.user;
 
-import com.khahnm04.ecommerce.common.enums.AddressTypeEnum;
+import com.khahnm04.ecommerce.common.enums.AddressType;
 import com.khahnm04.ecommerce.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,23 +15,34 @@ import org.hibernate.annotations.ColumnDefault;
 @Table(name = "addresses")
 public class Address extends BaseEntity<Long> {
 
+    @Column(name = "receiver_name", nullable = false)
+    private String receiverName;
+
+    @Column(name = "receiver_phone", nullable = false, length = 15)
+    private String receiverPhone;
+
     @Column(name = "province", nullable = false)
     private String province;
+
+    @Column(name = "district", nullable = false)
+    private String district;
 
     @Column(name = "ward", nullable = false)
     private String ward;
 
-    @Column(name = "home_address", nullable = false)
-    private String homeAddress;
+    @Column(name = "detail_address", nullable = false)
+    private String detailAddress;
 
-    @Column(name = "reminiscent_name")
-    private String reminiscentName;
+    @Column(name = "address_name")
+    private String addressName;
 
+    @Builder.Default
     @ColumnDefault("'HOME'")
     @Enumerated(EnumType.STRING)
     @Column(name = "address_type")
-    private AddressTypeEnum addressType = AddressTypeEnum.HOME;
+    private AddressType addressType = AddressType.HOME;
 
+    @Builder.Default
     @ColumnDefault("0")
     @Column(name = "is_default")
     private Boolean isDefault = false;

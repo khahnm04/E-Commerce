@@ -1,8 +1,9 @@
 package com.khahnm04.ecommerce.entity.auth;
 
-import com.khahnm04.ecommerce.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 @Entity
@@ -12,21 +13,25 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "roles")
-public class Role extends BaseEntity<Long> {
+public class Role {
 
-    @Column(name = "name", nullable = false, unique = true)
+    @Id
     private String name;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "TEXT",  nullable = false)
     private String description;
+
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @ManyToMany
     @JoinTable(
-        name = "permission_roles",
-        joinColumns = @JoinColumn(name = "role_id"),
-        inverseJoinColumns = @JoinColumn(name = "permission_id")
+        name = "role_permissions",
+        joinColumns = @JoinColumn(name = "role_name"),
+        inverseJoinColumns = @JoinColumn(name = "permission_name")
     )
-    @OrderBy("id ASC")
+    @OrderBy("name ASC")
     Set<Permission> permissions;
 
 }

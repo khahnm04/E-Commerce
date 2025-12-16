@@ -1,12 +1,10 @@
 package com.khahnm04.ecommerce.entity.brand;
 
-import com.khahnm04.ecommerce.common.enums.StatusEnum;
+import com.khahnm04.ecommerce.common.enums.BrandStatus;
 import com.khahnm04.ecommerce.entity.BaseEntity;
-import com.khahnm04.ecommerce.entity.product.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
-import java.util.List;
 
 @Entity
 @Getter
@@ -17,11 +15,11 @@ import java.util.List;
 @Table(name = "brands")
 public class Brand extends BaseEntity<Long> {
 
-    @Column(name = "slug", nullable = false, unique = true)
-    private String slug;
-
     @Column(name = "name", nullable = false, unique = true)
     private String name;
+
+    @Column(name = "slug", nullable = false, unique = true)
+    private String slug;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
@@ -32,12 +30,10 @@ public class Brand extends BaseEntity<Long> {
     @Column(name = "country")
     private String country;
 
+    @Builder.Default
     @ColumnDefault("'ACTIVE'")
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private StatusEnum status = StatusEnum.ACTIVE;
-
-    @OneToMany(mappedBy = "brand", fetch = FetchType.LAZY)
-    private List<Product> products;
+    private BrandStatus status = BrandStatus.ACTIVE;
 
 }

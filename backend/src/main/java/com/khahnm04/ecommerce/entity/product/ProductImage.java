@@ -13,8 +13,12 @@ import lombok.*;
 @Table(name = "product_images")
 public class ProductImage extends BaseEntity<Long> {
 
-    @Column(name = "image_url", columnDefinition = "TEXT")
+    @Column(name = "image_url", nullable = false, columnDefinition = "TEXT")
     private String imageUrl;
+
+    @Builder.Default
+    @Column(name = "display_order")
+    private Integer displayOrder = 0;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false)

@@ -4,13 +4,13 @@ import lombok.*;
 import java.io.Serializable;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class RoleResponse implements Serializable {
 
-    private Long id;
     private String name;
     private String description;
     private Set<PermissionResponse> permissions;

@@ -1,7 +1,7 @@
 package com.khahnm04.ecommerce.config;
 
 import com.khahnm04.ecommerce.entity.user.User;
-import com.khahnm04.ecommerce.common.enums.RoleEnum;
+import com.khahnm04.ecommerce.common.enums.UserRole;
 import com.khahnm04.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ public class ApplicationInitConfig {
         return app -> {
             if (userRepository.findByEmail("admin@gmail.com").isEmpty()) {
                 var roles = new HashSet<String>();
-                roles.add(RoleEnum.ADMIN.name());
+                roles.add(UserRole.ADMIN.name());
 
                 User user = new User();
                 user.setFullName("admin");

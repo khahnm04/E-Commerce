@@ -1,15 +1,22 @@
 package com.khahnm04.ecommerce.service.category;
 
-import com.khahnm04.ecommerce.common.enums.CategoryStatusEnum;
+import com.khahnm04.ecommerce.common.enums.CategoryStatus;
 import com.khahnm04.ecommerce.common.util.SortUtils;
+import com.khahnm04.ecommerce.dto.request.category.AssignProductToCategoryRequest;
 import com.khahnm04.ecommerce.dto.request.category.CategoryRequest;
 import com.khahnm04.ecommerce.dto.response.category.CategoryResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
+import com.khahnm04.ecommerce.dto.response.product.ProductResponse;
 import com.khahnm04.ecommerce.entity.category.Category;
+import com.khahnm04.ecommerce.entity.category.ProductCategory;
+import com.khahnm04.ecommerce.entity.product.Product;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.CategoryMapper;
+import com.khahnm04.ecommerce.mapper.ProductMapper;
 import com.khahnm04.ecommerce.repository.CategoryRepository;
+import com.khahnm04.ecommerce.repository.ProductCategoryRepository;
+import com.khahnm04.ecommerce.repository.ProductRepository;
 import com.khahnm04.ecommerce.service.upload.CloudinaryService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -27,9 +35,12 @@ import java.util.*;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
 
+    private final ProductCategoryRepository productCategoryRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
     private final CloudinaryService cloudinaryService;
     private final CategoryMapper categoryMapper;
+    private final ProductMapper productMapper;
 
     @Override
     @Transactional
@@ -45,12 +56,12 @@ public class CategoryServiceImpl implements CategoryService {
         category.setImage(cloudinaryService.upload(request.getImage()));
 
         category.setParent(Optional.ofNullable(request.getParentId())
-                        .map(this::getCategoryById)
-                        .orElse(null));
+                .map(this::getCategoryById)
+                .orElse(null));
 
         String path = Optional.ofNullable(category.getParent())
-                        .map(Category::getPath)
-                        .orElse("");
+                .map(Category::getPath)
+                .orElse("");
 
         Category savedCategory = categoryRepository.save(category);
         savedCategory.setPath(path + savedCategory.getId() + "/");
@@ -93,10 +104,12 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryResponse updateCategory(Long id, CategoryRequest request, MultipartFile file) {
         Category category = getCategoryById(id);
 
-        if (!Objects.equals(category.getSlug(), request.getSlug()) && categoryRepository.existsBySlug(request.getSlug())) {
+        if (StringUtils.hasText(request.getName())
+                && categoryRepository.existsByNameIgnoreCaseAndIdNot(request.getName(), id)) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
-        if (!Objects.equals(category.getName(), request.getName()) && categoryRepository.existsByName(request.getName())) {
+        if (StringUtils.hasText(request.getSlug())
+                && categoryRepository.existsBySlugIgnoreCaseAndIdNot(request.getSlug(), id)) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
 
@@ -129,7 +142,7 @@ public class CategoryServiceImpl implements CategoryService {
             Category savedCategory = categoryRepository.save(category);
             categoryRepository.updateDescendantPaths(oldPath + "%", newPath, oldPath.length());
 
-            log.info("Updated category AND MOVED tree with id {}", savedCategory.getId());
+            log.info("Updated category and moved tree with id {}", savedCategory.getId());
             return categoryMapper.toCategoryResponse(savedCategory);
         }
     }
@@ -139,7 +152,7 @@ public class CategoryServiceImpl implements CategoryService {
     public void updateCategoryStatus(Long id, String status) {
         Category category = getCategoryById(id);
 
-        boolean isValid = Arrays.stream(CategoryStatusEnum.values())
+        boolean isValid = Arrays.stream(CategoryStatus.values())
                 .anyMatch(e -> e.name().equalsIgnoreCase(status));
         if (!isValid) {
             throw new AppException(ErrorCode.INVALID_ENUM_VALUE);
@@ -147,16 +160,16 @@ public class CategoryServiceImpl implements CategoryService {
 
         String pathWithWildcard = category.getPath() + "%";
 
-        if (CategoryStatusEnum.INACTIVE.name().equalsIgnoreCase(status)) {
-            category.setStatus(CategoryStatusEnum.INACTIVE_MANUAL);
+        if (CategoryStatus.INACTIVE.name().equalsIgnoreCase(status)) {
+            category.setStatus(CategoryStatus.INACTIVE_MANUAL);
             categoryRepository.save(category);
             categoryRepository.updateDescendantStatusesByPath(
-                    pathWithWildcard, category.getId(), CategoryStatusEnum.INACTIVE_CASCADE, CategoryStatusEnum.ACTIVE);
-        } else if (CategoryStatusEnum.ACTIVE.name().equalsIgnoreCase(status)) {
-            category.setStatus(CategoryStatusEnum.ACTIVE);
+                    pathWithWildcard, category.getId(), CategoryStatus.INACTIVE_CASCADE, CategoryStatus.ACTIVE);
+        } else if (CategoryStatus.ACTIVE.name().equalsIgnoreCase(status)) {
+            category.setStatus(CategoryStatus.ACTIVE);
             categoryRepository.save(category);
             categoryRepository.updateDescendantStatusesByPath(
-                    pathWithWildcard, category.getId(), CategoryStatusEnum.ACTIVE, CategoryStatusEnum.INACTIVE_CASCADE);
+                    pathWithWildcard, category.getId(), CategoryStatus.ACTIVE, CategoryStatus.INACTIVE_CASCADE);
         } else {
             throw new RuntimeException("status action is invalid!");
         }
@@ -188,6 +201,44 @@ public class CategoryServiceImpl implements CategoryService {
         category.setDeletedAt(null);
         categoryRepository.save(category);
         log.info("Category restored with id {}", id);
+    }
+
+    @Override
+    @Transactional
+    public void assignProductToCategory(Long id, AssignProductToCategoryRequest request) {
+        Category category = getCategoryById(id);
+        Set<Long> productIds = request.getProductIds();
+
+        Set<Long> existing = productCategoryRepository
+                .findExistingProductIds(category.getId(), productIds);
+        if (!existing.isEmpty()) {
+            throw new AppException(ErrorCode.DUPLICATE_CATEGORY_PRODUCT);
+        }
+
+        List<Product> products = productRepository.findAllById(productIds);
+        if (products.size() != productIds.size()) {
+            throw new AppException(ErrorCode.PRODUCT_NOT_FOUND);
+        }
+
+        List<ProductCategory> newRelations = products.stream()
+                .map(p -> ProductCategory.builder()
+                        .category(category)
+                        .product(p)
+                        .build())
+                .toList();
+
+        productCategoryRepository.saveAll(newRelations);
+        log.info("Completed assigning {} products to category {}", productIds.size(), id);
+    }
+
+
+    @Override
+    public PageResponse<ProductResponse> getAllProductsByCategoryId(int page, int size, String sort, Long id) {
+        getCategoryById(id);
+        Pageable pageable = PageRequest.of(page, size, SortUtils.parseSort(sort));
+        Page<Product> productPage = productCategoryRepository.findAllByCategoryId(id, pageable);
+        Page<ProductResponse> dtoPage = productPage.map(productMapper::fromProductToProductResponse);
+        return PageResponse.fromPage(dtoPage);
     }
 
     private Category getCategoryById(Long id) {

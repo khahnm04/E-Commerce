@@ -1,6 +1,6 @@
 package com.khahnm04.ecommerce.service.news;
 
-import com.khahnm04.ecommerce.common.enums.NewsStatusEnum;
+import com.khahnm04.ecommerce.common.enums.NewsStatus;
 import com.khahnm04.ecommerce.dto.request.news.NewsRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.news.NewsResponse;
@@ -17,10 +17,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -77,8 +77,8 @@ public class NewsServiceImpl implements NewsService {
     public NewsResponse updateNews(Long id, NewsRequest request, MultipartFile file) {
         News news = getNewsById(id);
 
-        if (!Objects.equals(news.getSlug(), request.getSlug())
-                && newsRepository.existsBySlug(request.getSlug())) {
+        if (!StringUtils.hasText(request.getSlug())
+                && newsRepository.existsBySlugIgnoreCaseAndIdNot(request.getSlug(), id)) {
             throw new AppException(ErrorCode.NEWS_EXISTED);
         }
 
@@ -94,14 +94,14 @@ public class NewsServiceImpl implements NewsService {
     public void updateNewsStatus(Long id, String status) {
         News news = getNewsById(id);
 
-        boolean isValid = Arrays.stream(NewsStatusEnum.values())
+        boolean isValid = Arrays.stream(NewsStatus.values())
                 .anyMatch(e -> e.name().equalsIgnoreCase(status));
 
         if (!isValid) {
             throw new AppException(ErrorCode.INVALID_ENUM_VALUE);
         }
 
-        news.setStatus(NewsStatusEnum.valueOf(status));
+        news.setStatus(NewsStatus.valueOf(status));
         newsRepository.save(news);
         log.info("Updated status news with id = {}", news.getId());
     }

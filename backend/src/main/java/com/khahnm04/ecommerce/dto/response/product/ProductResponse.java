@@ -1,9 +1,9 @@
 package com.khahnm04.ecommerce.dto.response.product;
 
-import com.khahnm04.ecommerce.common.enums.ProductStatusEnum;
 import com.khahnm04.ecommerce.dto.response.BaseResponse;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,13 +12,38 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 public class ProductResponse extends BaseResponse<Long> {
 
-    private String slug;
     private String name;
+    private String slug;
     private Long price;
     private Long oldPrice;
-    private String image;
+    private String thumbnail;
     private String description;
-    private ProductStatusEnum status;
-    private Long brandId;
+    private String status;
+    private BrandSummary brand;
+    private List<CategorySummary> categories;
+    private List<ProductImageResponse> images;
+    private List<AttributeResponse> attributes;
+
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BrandSummary {
+        private Long id;
+        private String name;
+        private String slug;
+    }
+
+    @Getter
+    @Setter
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class CategorySummary {
+        private Long id;
+        private String name;
+        private String slug;
+    }
 
 }

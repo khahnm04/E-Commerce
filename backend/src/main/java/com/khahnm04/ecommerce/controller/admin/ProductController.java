@@ -2,18 +2,25 @@ package com.khahnm04.ecommerce.controller.admin;
 
 import com.khahnm04.ecommerce.dto.request.product.ProductRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
+import com.khahnm04.ecommerce.dto.response.product.ProductFaqResponse;
+import com.khahnm04.ecommerce.dto.response.product.ProductQuestionResponse;
 import com.khahnm04.ecommerce.dto.response.product.ProductResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
+import com.khahnm04.ecommerce.dto.response.product.ProductVariantResponse;
+import com.khahnm04.ecommerce.exception.ServiceValidationException;
 import com.khahnm04.ecommerce.service.product.ProductService;
+import com.khahnm04.ecommerce.service.upload.CloudinaryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("${api.prefix}/admin/products")
 @RequiredArgsConstructor
@@ -24,10 +31,14 @@ public class ProductController {
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<ProductResponse> createProduct(
-            @Valid @ModelAttribute ProductRequest request
+            @Valid @RequestPart("data") ProductRequest request,
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail
     ) {
+        if (thumbnail == null || thumbnail.isEmpty()) {
+            throw new ServiceValidationException("thumbnail", "thumbnail cannot be null");
+        }
         return ApiResponse.<ProductResponse>builder()
-                .data(productService.createProduct(request))
+                .data(productService.createProduct(request, thumbnail))
                 .message("product created successfully")
                 .build();
     }
@@ -60,6 +71,47 @@ public class ProductController {
                 .build();
     }
 
+    @GetMapping("/{productId}/product-variants")
+    public ApiResponse<List<ProductVariantResponse>> getProductVariantsByProductId(
+            @PathVariable Long productId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort
+    ) {
+        PageResponse<ProductVariantResponse> pageResponse = productService.getProductVariantsByProductId(productId, page - 1, size, sort);
+        return ApiResponse.<List<ProductVariantResponse>>builder()
+                .meta(pageResponse.getMeta())
+                .data(pageResponse.getData())
+                .message("get variants by product id successfully")
+                .build();
+    }
+
+    @GetMapping("/{productId}/product-faqs")
+    public ApiResponse<List<ProductFaqResponse>> getFaqsByProductId(
+            @PathVariable Long productId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "displayOrder,asc") String sort
+    ) {
+        PageResponse<ProductFaqResponse> pageResponse = productService.getFaqsByProductId(productId, page - 1, size, sort);
+        return ApiResponse.<List<ProductFaqResponse>>builder()
+                .meta(pageResponse.getMeta())
+                .data(pageResponse.getData())
+                .message("get product faqs successfully")
+                .build();
+    }
+
+
+    @GetMapping("/{productId}/product-questions")
+    public ApiResponse<List<ProductQuestionResponse>> getQuestionsByProduct(
+            @PathVariable Long productId
+    ) {
+        return ApiResponse.<List<ProductQuestionResponse>>builder()
+                .data(productService.getQuestionsByProductId(productId))
+                .message("Get product questions successfully")
+                .build();
+    }
+
     @GetMapping("/{id}")
     public ApiResponse<ProductResponse> getProductDetailById(@PathVariable Long id) {
         return ApiResponse.<ProductResponse>builder()
@@ -79,11 +131,14 @@ public class ProductController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<ProductResponse> updateProduct(
             @PathVariable Long id,
-            @Valid ProductRequest request,
-            @RequestPart(value = "image", required = false) MultipartFile file
+            @Valid @RequestPart("data") ProductRequest request,
+            @RequestPart(value = "thumbnail", required = false) MultipartFile thumbnail
     ) {
+        if (thumbnail == null || thumbnail.isEmpty()) {
+            throw new ServiceValidationException("thumbnail", "thumbnail cannot be null");
+        }
         return ApiResponse.<ProductResponse>builder()
-                .data(productService.updateProduct(id, request, file))
+                .data(productService.updateProduct(id, request, thumbnail))
                 .message("updated product")
                 .build();
     }

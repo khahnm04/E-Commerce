@@ -1,11 +1,9 @@
 package com.khahnm04.ecommerce.entity.product;
 
 import com.khahnm04.ecommerce.entity.BaseEntity;
-import com.khahnm04.ecommerce.entity.inventory.Inventory;
-import com.khahnm04.ecommerce.entity.order.OrderDetail;
 import jakarta.persistence.*;
 import lombok.*;
-
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,20 +21,23 @@ public class ProductVariant extends BaseEntity<Long> {
     @Column(name = "price", nullable = false)
     private Long price;
 
-    @Column(name = "old_price", nullable = false)
+    @Column(name = "old_price")
     private Long oldPrice;
+
+    @Column(name = "image", columnDefinition = "TEXT")
+    private String image;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
-    private List<OrderDetail> orderDetails;
+    @Builder.Default
+    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ProductVariantValue> productVariantValues = new ArrayList<>();
 
-    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
-    private List<Inventory> inventories;
-
-    @OneToMany(mappedBy = "productVariant", fetch = FetchType.LAZY)
-    private List<ProductVariantValue> productVariantValues;
+    public void addVariantValue(ProductVariantValue value) {
+        productVariantValues.add(value);
+        value.setProductVariant(this);
+    }
 
 }

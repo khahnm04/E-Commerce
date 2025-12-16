@@ -12,16 +12,12 @@ import org.mapstruct.*;
 public interface UserMapper {
 
     @Mapping(target = "roles", ignore = true)
-    @Mapping(target = "avatar", ignore = true)
-    @Mapping(target = "status", constant = "ACTIVE")
-    @Mapping(target = "gender", constant = "UNKNOWN")
     User fromUserRequestToUser(UserRequest request);
 
     @Mapping(target = "roles", ignore = true)
     UserResponse fromUserToUserResponse(User user);
 
     @Mapping(target = "roles", ignore = true)
-    @Mapping(target = "avatar", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateUser(@MappingTarget User user, UserRequest request);
 
@@ -30,8 +26,6 @@ public interface UserMapper {
 
     UserProfileResponse fromUserToProfileResponse(User user);
 
-    @Mapping(target = "status", constant = "ACTIVE")
-    @Mapping(target = "gender", constant = "UNKNOWN")
     User fromRegisterRequestToUser(RegisterRequest request);
 
 }

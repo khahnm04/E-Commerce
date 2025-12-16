@@ -1,9 +1,11 @@
 package com.khahnm04.ecommerce.controller.admin;
 
+import com.khahnm04.ecommerce.dto.request.category.AssignProductToCategoryRequest;
 import com.khahnm04.ecommerce.dto.request.category.CategoryRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.category.CategoryResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
+import com.khahnm04.ecommerce.dto.response.product.ProductResponse;
 import com.khahnm04.ecommerce.service.category.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -125,10 +127,37 @@ public class CategoryController {
     }
 
     @PatchMapping("/{id}/restore")
-    public ApiResponse<Void> restoreCategory(@PathVariable Long id) {
+    public ApiResponse<Void> restoreCategory(
+            @PathVariable Long id
+    ) {
         categoryService.restoreCategory(id);
         return ApiResponse.<Void>builder()
                 .message("category restored successfully")
+                .build();
+    }
+
+    @PostMapping("/{id}/products")
+    public ApiResponse<Void> assignProductToCategory(
+            @PathVariable Long id,
+            @Valid @RequestBody AssignProductToCategoryRequest request
+    ) {
+        categoryService.assignProductToCategory(id, request);
+        return ApiResponse.<Void>builder()
+                .message("assign product to category successfully")
+                .build();
+    }
+
+    @GetMapping("/{id}/products")
+    public ApiResponse<List<ProductResponse>> getAllProductsByCategoryId(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt,desc") String sort,
+            @PathVariable Long id
+    ) {
+        PageResponse<ProductResponse> pageResponse = categoryService.getAllProductsByCategoryId(page - 1, size, sort, id);
+        return ApiResponse.<List<ProductResponse>>builder()
+                .meta(pageResponse.getMeta())
+                .data(pageResponse.getData())
                 .build();
     }
 
