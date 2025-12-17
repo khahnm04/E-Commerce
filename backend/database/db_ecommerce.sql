@@ -303,6 +303,37 @@ CREATE TABLE product_questions (
     CONSTRAINT fk_product_questions__parents FOREIGN KEY (parent_id) REFERENCES product_questions(id) ON DELETE SET NULL
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- Bảng branches
+CREATE TABLE branches (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE, -- Tên chi nhánh (VD: CellphoneS Thái Hà)
+    address VARCHAR(255) NOT NULL, -- Địa chỉ cụ thể (VD: 11 Thái Hà, Đống Đa)
+    city VARCHAR(255) NOT NULL, -- Thành phố/Tỉnh (Quan trọng để khách lọc nhanh: Hà Nội, HCM...)
+    phone_number VARCHAR(20),
+    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by BIGINT,
+    deleted_at DATETIME
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Bảng inventories
+CREATE TABLE inventories (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    product_variant_id BIGINT NOT NULL,
+    branch_id BIGINT NOT NULL,
+    quantity BIGINT NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_inventories__variants FOREIGN KEY (product_variant_id) REFERENCES product_variants(id),
+    CONSTRAINT fk_inventories__branches FOREIGN KEY (branch_id) REFERENCES branches(id),
+    UNIQUE (product_variant_id, branch_id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+
+
+
 
 
 
@@ -378,33 +409,8 @@ CREATE TABLE cart_items (
     UNIQUE (cart_id, product_variant_id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Bảng branches
-CREATE TABLE branches (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE, -- Tên chi nhánh (VD: CellphoneS Thái Hà)
-    address VARCHAR(255) NOT NULL, -- Địa chỉ cụ thể (VD: 11 Thái Hà, Đống Đa)
-    city VARCHAR(100) NOT NULL, -- Thành phố/Tỉnh (Quan trọng để khách lọc nhanh: Hà Nội, HCM...)
-    phone_number VARCHAR(20),
-    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    created_by BIGINT,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    updated_by BIGINT,
-    deleted_at DATETIME
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- Bảng inventories
-CREATE TABLE inventories (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    product_variant_id BIGINT NOT NULL,
-    branch_id BIGINT NOT NULL,
-    quantity BIGINT NOT NULL DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_inventories__variants FOREIGN KEY (product_variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
-    CONSTRAINT fk_inventories__branches FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE CASCADE,
-    UNIQUE (product_variant_id, branch_id)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 
 CREATE TABLE stock_movements (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,

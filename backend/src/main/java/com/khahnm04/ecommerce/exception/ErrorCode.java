@@ -86,6 +86,9 @@ public enum ErrorCode {
 
     PRODUCT_QUESTION_NOT_FOUND(2300, "product question not found", HttpStatus.NOT_FOUND),
     INVALID_REPLY_TARGET(2301, "Invalid reply target", HttpStatus.BAD_REQUEST),
+
+    BRANCH_NOT_FOUND(2500, "Branch not found", HttpStatus.NOT_FOUND),
+    BRANCH_NAME_EXISTED(2501, "Branch name already exists", HttpStatus.BAD_REQUEST),
     ;
 
     private final Integer code;
