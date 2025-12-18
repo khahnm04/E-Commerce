@@ -1,9 +1,12 @@
 package com.khahnm04.ecommerce.entity.inventory;
 
-import com.khahnm04.ecommerce.entity.BaseEntity;
 import com.khahnm04.ecommerce.entity.product.ProductVariant;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -14,7 +17,12 @@ import lombok.*;
 @Table(name = "inventories", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"product_variant_id", "branch_id"})
 })
-public class Inventory extends BaseEntity<Long> {
+public class Inventory implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_variant_id", nullable = false)
@@ -27,5 +35,13 @@ public class Inventory extends BaseEntity<Long> {
     @Builder.Default
     @Column(name = "quantity", nullable = false)
     private Long quantity = 0L;
+
+    @CreationTimestamp
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
 }

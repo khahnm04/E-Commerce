@@ -1,16 +1,22 @@
 package com.khahnm04.ecommerce.service.inventory;
 
-import com.khahnm04.ecommerce.dto.request.inventory.InventoryRequest;
+import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.inventory.InventoryResponse;
 
 import java.util.List;
 
 public interface InventoryService {
 
-    InventoryResponse updateInventory(InventoryRequest request);
+    // Xem chi tiết tồn kho của 1 biến thể tại các chi nhánh (Dùng cho Admin ProductVariantController)
+    List<InventoryResponse> getInventoriesByVariant(Long variantId);
 
-    List<InventoryResponse> getInventoryByVariant(Long variantId);
+    // Xem danh sách tồn kho, lọc, tìm kiếm, cảnh báo hết hàng (Dùng cho Admin InventoryController)
+    PageResponse<InventoryResponse> getInventories(Long branchId, String keyword, Boolean isLowStock, int page, int size);
 
+    // Xem chi tiết 1 record inventory
+    InventoryResponse getInventoryById(Long id);
+
+    // Lấy tổng tồn kho của 1 biến thể (Cộng dồn tất cả chi nhánh) - Dùng cho Client hiển thị
     Long getTotalStock(Long variantId);
 
 }

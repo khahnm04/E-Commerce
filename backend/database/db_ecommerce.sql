@@ -331,6 +331,44 @@ CREATE TABLE inventories (
     UNIQUE (product_variant_id, branch_id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+CREATE TABLE stock_movements (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    inventory_id BIGINT NOT NULL,
+    type ENUM('IN','OUT','ADJUSTMENT') NOT NULL,
+    quantity BIGINT NOT NULL CHECK (quantity > 0),
+    reference_id BIGINT DEFAULT NULL,
+    note TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    CONSTRAINT fk_movements__inventories FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Bảng carts
+CREATE TABLE carts (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL UNIQUE,
+    coupon_code VARCHAR(255),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_carts__users FOREIGN KEY (user_id) REFERENCES users(id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- Bảng cart_items
+CREATE TABLE cart_items (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    cart_id BIGINT NOT NULL,
+    product_variant_id BIGINT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_cart_items__carts FOREIGN KEY (cart_id) REFERENCES carts(id),
+    CONSTRAINT fk_cart_items__variants FOREIGN KEY (product_variant_id) REFERENCES product_variants(id),
+    UNIQUE (cart_id, product_variant_id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+
+
+
 
 
 
@@ -384,44 +422,6 @@ CREATE TABLE news_products (
     CONSTRAINT fk_news_products__news FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
     CONSTRAINT fk_news_products__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
     UNIQUE (news_id, product_id)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- Bảng carts
-CREATE TABLE carts (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT NOT NULL UNIQUE,
-    coupon_code VARCHAR(50),
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_carts__users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- Bảng cart_items
-CREATE TABLE cart_items (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    cart_id BIGINT NOT NULL,
-    product_variant_id BIGINT NOT NULL,
-    quantity INT NOT NULL DEFAULT 1,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_cart_items__carts FOREIGN KEY (cart_id) REFERENCES carts(id) ON DELETE CASCADE,
-    CONSTRAINT fk_cart_items__variants FOREIGN KEY (product_variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
-    UNIQUE (cart_id, product_variant_id)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-
-
-
-CREATE TABLE stock_movements (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    inventory_id BIGINT NOT NULL,
-    type ENUM('IN','OUT','ADJUSTMENT') NOT NULL,
-    quantity BIGINT NOT NULL CHECK (quantity > 0),
-    reference_id BIGINT DEFAULT NULL,
-    note TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    created_by BIGINT,
-    CONSTRAINT fk_movements__inventories FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng orders

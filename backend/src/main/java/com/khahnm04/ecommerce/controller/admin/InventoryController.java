@@ -1,12 +1,12 @@
 package com.khahnm04.ecommerce.controller.admin;
 
-import com.khahnm04.ecommerce.dto.request.inventory.InventoryRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
+import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.inventory.InventoryResponse;
 import com.khahnm04.ecommerce.service.inventory.InventoryService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController
@@ -16,24 +16,29 @@ public class InventoryController {
 
     private final InventoryService inventoryService;
 
-    // API cập nhật kho (Set stock)
-    @PostMapping("/update")
-    public ApiResponse<InventoryResponse> updateInventory(
-            @Valid @RequestBody InventoryRequest request
+    @GetMapping
+    public ApiResponse<List<InventoryResponse>> getInventories(
+            @RequestParam(required = false) Long branchId,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) Boolean isLowStock,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        return ApiResponse.<InventoryResponse>builder()
-                .data(inventoryService.updateInventory(request))
-                .message("Inventory updated successfully")
+        PageResponse<InventoryResponse> pageResponse =
+                inventoryService.getInventories(branchId, keyword, isLowStock, page, size);
+
+        return ApiResponse.<List<InventoryResponse>>builder()
+                .data(pageResponse.getData())
+                .meta(pageResponse.getMeta())
+                .message("Inventory list retrieved successfully")
                 .build();
     }
 
-    // API xem chi tiết tồn kho của 1 biến thể (để Admin biết hàng đang nằm ở đâu)
-    @GetMapping("/variant/{variantId}")
-    public ApiResponse<List<InventoryResponse>> getInventoryByVariant(
-            @PathVariable Long variantId
-    ) {
-        return ApiResponse.<List<InventoryResponse>>builder()
-                .data(inventoryService.getInventoryByVariant(variantId))
+    @GetMapping("/{id}")
+    public ApiResponse<InventoryResponse> getInventoryById(@PathVariable Long id) {
+        return ApiResponse.<InventoryResponse>builder()
+                .data(inventoryService.getInventoryById(id))
+                .message("Inventory details retrieved successfully")
                 .build();
     }
 

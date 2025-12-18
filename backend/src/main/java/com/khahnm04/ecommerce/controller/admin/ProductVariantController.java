@@ -3,7 +3,9 @@ package com.khahnm04.ecommerce.controller.admin;
 import com.khahnm04.ecommerce.dto.request.product.ProductVariantRequest;
 import com.khahnm04.ecommerce.dto.response.ApiResponse;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
+import com.khahnm04.ecommerce.dto.response.inventory.InventoryResponse;
 import com.khahnm04.ecommerce.dto.response.product.ProductVariantResponse;
+import com.khahnm04.ecommerce.service.inventory.InventoryService;
 import com.khahnm04.ecommerce.service.product.ProductVariantService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 
 @Slf4j
@@ -22,6 +23,7 @@ import java.util.List;
 public class ProductVariantController {
 
     private final ProductVariantService productVariantService;
+    private final InventoryService inventoryService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
@@ -75,6 +77,14 @@ public class ProductVariantController {
         return ApiResponse.<ProductVariantResponse>builder()
                 .data(productVariantService.getDetailBySku(sku))
                 .message("get product variant detail successfully")
+                .build();
+    }
+
+    @GetMapping("/{variantId}/inventories")
+    public ApiResponse<List<InventoryResponse>> getInventoriesByVariant(@PathVariable Long variantId) {
+        return ApiResponse.<List<InventoryResponse>>builder()
+                .data(inventoryService.getInventoriesByVariant(variantId))
+                .message("Lấy danh sách kho của biến thể thành công")
                 .build();
     }
 

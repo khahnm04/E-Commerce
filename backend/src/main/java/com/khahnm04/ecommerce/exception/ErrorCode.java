@@ -89,6 +89,14 @@ public enum ErrorCode {
 
     BRANCH_NOT_FOUND(2500, "Branch not found", HttpStatus.NOT_FOUND),
     BRANCH_NAME_EXISTED(2501, "Branch name already exists", HttpStatus.BAD_REQUEST),
+
+    INVENTORY_NOT_FOUND(2600, "Inventory not found", HttpStatus.NOT_FOUND),
+    INSUFFICIENT_STOCK(2601, "Insufficient stock", HttpStatus.BAD_REQUEST),
+
+    // Cart Errors
+    CART_ITEM_NOT_FOUND(3001, "Cart item not found", HttpStatus.NOT_FOUND),
+    OUT_OF_STOCK(3002, "Product is out of stock", HttpStatus.BAD_REQUEST),
+    INVALID_QUANTITY(3003, "Quantity must be greater than 0", HttpStatus.BAD_REQUEST),
     ;
 
     private final Integer code;
