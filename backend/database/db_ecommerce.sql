@@ -366,62 +366,20 @@ CREATE TABLE cart_items (
     UNIQUE (cart_id, product_variant_id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- CHUA LAM
-
--- Bảng banners
-CREATE TABLE banners (
-	id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE,
-    image TEXT NOT NULL,
-    link_url VARCHAR(500),
-    position VARCHAR(50) NOT NULL DEFAULT 'HOME_SLIDER',
-    display_order INT DEFAULT 0,         -- Số càng nhỏ càng ưu tiên hiện trước
-    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    created_by BIGINT,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    updated_by BIGINT,
-    deleted_at DATETIME
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-CREATE TABLE news_products (
+-- Bảng coupons
+CREATE TABLE coupons (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    news_id BIGINT NOT NULL,
-    product_id BIGINT NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,          -- Mã code (VD: SALE50)
+    discount_type VARCHAR(20) NOT NULL,        -- PERCENT (Phần trăm) hoặc FIXED (Tiền mặt)
+    discount_value DECIMAL(15, 2) NOT NULL,    -- Giá trị giảm (VD: 10% hoặc 50.000đ)
+    min_order_value DECIMAL(15, 2),            -- Đơn tối thiểu để dùng mã
+    max_usage INT,                             -- Tổng số lượt dùng tối đa
+    usage_count INT DEFAULT 0,                 -- Số lượt đã dùng
+    start_date DATETIME,
+    end_date DATETIME,
+    active BOOLEAN DEFAULT TRUE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    created_by BIGINT,
-    CONSTRAINT fk_news_products__news FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
-    CONSTRAINT fk_news_products__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    UNIQUE (news_id, product_id)
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng orders
@@ -498,7 +456,7 @@ CREATE TABLE payments (
     payment_method ENUM('CASH','CARD','TRANSFER','WALLET') NOT NULL,
 	payment_status ENUM('UNPAID','PAID','REFUNDED') DEFAULT 'UNPAID',
     amount BIGINT NOT NULL,                    -- Số tiền thanh toán
-    transaction_code VARCHAR(100),             -- Mã giao dịch từ ngân hàng/cổng thanh toán
+    transaction_code VARCHAR(255),             -- Mã giao dịch từ ngân hàng/cổng thanh toán
     paid_at DATETIME,                          -- Thời gian thanh toán
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT,
@@ -507,3 +465,65 @@ CREATE TABLE payments (
     deleted_at DATETIME,
     CONSTRAINT fk_payments__orders FOREIGN KEY (order_id) REFERENCES orders(id)
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- CHUA LAM
+
+-- Bảng banners
+CREATE TABLE banners (
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    image TEXT NOT NULL,
+    link_url VARCHAR(500),
+    position VARCHAR(50) NOT NULL DEFAULT 'HOME_SLIDER',
+    display_order INT DEFAULT 0,         -- Số càng nhỏ càng ưu tiên hiện trước
+    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by BIGINT,
+    deleted_at DATETIME
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+CREATE TABLE news_products (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    news_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    CONSTRAINT fk_news_products__news FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
+    CONSTRAINT fk_news_products__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    UNIQUE (news_id, product_id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

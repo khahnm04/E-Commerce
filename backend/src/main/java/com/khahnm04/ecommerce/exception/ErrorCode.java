@@ -97,6 +97,21 @@ public enum ErrorCode {
     CART_ITEM_NOT_FOUND(3001, "Cart item not found", HttpStatus.NOT_FOUND),
     OUT_OF_STOCK(3002, "Product is out of stock", HttpStatus.BAD_REQUEST),
     INVALID_QUANTITY(3003, "Quantity must be greater than 0", HttpStatus.BAD_REQUEST),
+
+    // Coupon Errors
+    COUPON_NOT_FOUND(4001, "Coupon not found", HttpStatus.NOT_FOUND),
+    COUPON_ALREADY_EXISTS(4002, "Coupon code already exists", HttpStatus.BAD_REQUEST),
+    COUPON_EXPIRED(4003, "Coupon is expired or usage limit reached", HttpStatus.BAD_REQUEST),
+    COUPON_NOT_ACTIVE(4004, "Coupon is disabled", HttpStatus.BAD_REQUEST),
+    COUPON_NOT_YET_VALID(4005, "Coupon is not yet valid", HttpStatus.BAD_REQUEST),
+    COUPON_MIN_ORDER_NOT_MET(4006, "Order value does not meet the minimum requirement", HttpStatus.BAD_REQUEST),
+
+    // --- CART ERRORS (Tiếp theo 3xxx) ---
+    CART_EMPTY(3004, "Giỏ hàng trống", HttpStatus.BAD_REQUEST),
+
+    // --- ORDER ERRORS (Nhóm 6xxx) ---
+    ORDER_NOT_FOUND(6001, "Không tìm thấy đơn hàng", HttpStatus.NOT_FOUND),
+    ORDER_CANNOT_CANCEL(6002, "Đơn hàng đã được xử lý hoặc đang vận chuyển, không thể hủy", HttpStatus.BAD_REQUEST),
     ;
 
     private final Integer code;
