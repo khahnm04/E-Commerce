@@ -112,6 +112,11 @@ public enum ErrorCode {
     // --- ORDER ERRORS (Nhóm 6xxx) ---
     ORDER_NOT_FOUND(6001, "Không tìm thấy đơn hàng", HttpStatus.NOT_FOUND),
     ORDER_CANNOT_CANCEL(6002, "Đơn hàng đã được xử lý hoặc đang vận chuyển, không thể hủy", HttpStatus.BAD_REQUEST),
+
+    FEEDBACK_NOT_ALLOWED(6003, "Chỉ được đánh giá khi đơn hàng đã giao thành công", HttpStatus.BAD_REQUEST),
+    FEEDBACK_ALREADY_EXISTS(6004, "Bạn đã đánh giá sản phẩm này rồi", HttpStatus.BAD_REQUEST),
+
+    COUPON_ALREADY_USED_BY_USER(4007, "Bạn đã sử dụng mã giảm giá này rồi", HttpStatus.BAD_REQUEST),
     ;
 
     private final Integer code;

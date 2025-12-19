@@ -4,6 +4,7 @@ import com.khahnm04.ecommerce.entity.order.Order;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -15,6 +16,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findByOrderCode(String orderCode);
 
     // Lấy danh sách đơn hàng của 1 user (Có phân trang) - Dùng cho lịch sử mua hàng
+    @Query("select o from Order o where o.user.id = :userIduserId")
     Page<Order> findByUserId(Long userId, Pageable pageable);
 
 }

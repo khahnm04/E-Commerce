@@ -20,9 +20,10 @@ public class OrderController {
     private final OrderService orderService;
 
     // 1. Đặt hàng (Checkout)
-    // POST /api/v1/orders
     @PostMapping
-    public ApiResponse<OrderResponse> placeOrder(@Valid @RequestBody OrderRequest request) {
+    public ApiResponse<OrderResponse> placeOrder(
+            @Valid @RequestBody OrderRequest request
+    ) {
         return ApiResponse.<OrderResponse>builder()
                 .data(orderService.placeOrder(request))
                 .message("Đặt hàng thành công")
@@ -30,7 +31,6 @@ public class OrderController {
     }
 
     // 2. Xem lịch sử đơn hàng của tôi
-    // GET /api/v1/orders?page=0&size=10
     @GetMapping
     public ApiResponse<Page<OrderResponse>> getMyOrders(
             @RequestParam(defaultValue = "0") int page,
@@ -44,9 +44,10 @@ public class OrderController {
     }
 
     // 3. Xem chi tiết 1 đơn hàng
-    // GET /api/v1/orders/{orderCode}
     @GetMapping("/{orderCode}")
-    public ApiResponse<OrderResponse> getOrderDetail(@PathVariable String orderCode) {
+    public ApiResponse<OrderResponse> getOrderDetail(
+            @PathVariable String orderCode
+    ) {
         return ApiResponse.<OrderResponse>builder()
                 .data(orderService.getOrderDetail(orderCode))
                 .message("Lấy chi tiết đơn hàng thành công")
@@ -54,7 +55,6 @@ public class OrderController {
     }
 
     // 4. Hủy đơn hàng
-    // PUT /api/v1/orders/{orderCode}/cancel
     @PutMapping("/{orderCode}/cancel")
     public ApiResponse<Void> cancelOrder(
             @PathVariable String orderCode,

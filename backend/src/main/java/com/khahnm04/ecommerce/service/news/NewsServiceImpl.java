@@ -4,11 +4,17 @@ import com.khahnm04.ecommerce.common.enums.NewsStatus;
 import com.khahnm04.ecommerce.dto.request.news.NewsRequest;
 import com.khahnm04.ecommerce.dto.response.PageResponse;
 import com.khahnm04.ecommerce.dto.response.news.NewsResponse;
+import com.khahnm04.ecommerce.dto.response.product.ProductResponse;
 import com.khahnm04.ecommerce.entity.news.News;
+import com.khahnm04.ecommerce.entity.news.NewsProduct;
+import com.khahnm04.ecommerce.entity.product.Product;
 import com.khahnm04.ecommerce.exception.AppException;
 import com.khahnm04.ecommerce.exception.ErrorCode;
 import com.khahnm04.ecommerce.mapper.NewsMapper;
+import com.khahnm04.ecommerce.mapper.ProductMapper;
+import com.khahnm04.ecommerce.repository.NewsProductRepository;
 import com.khahnm04.ecommerce.repository.NewsRepository;
+import com.khahnm04.ecommerce.repository.ProductRepository;
 import com.khahnm04.ecommerce.service.upload.CloudinaryService;
 import com.khahnm04.ecommerce.common.util.SortUtils;
 import lombok.RequiredArgsConstructor;
@@ -17,10 +23,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -30,6 +38,9 @@ public class NewsServiceImpl implements NewsService {
     private final NewsRepository newsRepository;
     private final NewsMapper newsMapper;
     private final CloudinaryService cloudinaryService;
+    private final ProductRepository productRepository;
+    private final NewsProductRepository newsProductRepository;
+    private final ProductMapper productMapper;
 
     @Override
     public NewsResponse createNews(NewsRequest request) {
@@ -127,6 +138,45 @@ public class NewsServiceImpl implements NewsService {
         news.setDeletedAt(null);
         newsRepository.save(news);
         log.info("News restored with id {}", id);
+    }
+
+    // Trong NewsServiceImpl.java
+
+    @Override
+    @Transactional
+    public void addProductsToNews(Long newsId, List<Long> productIds) {
+        News news = newsRepository.findById(newsId)
+                .orElseThrow(() -> new AppException(ErrorCode.NEWS_NOT_FOUND));
+
+        for (Long productId : productIds) {
+            // Check nếu chưa có thì mới thêm
+            if (!newsProductRepository.existsByNewsIdAndProductId(newsId, productId)) {
+                Product product = productRepository.findById(productId)
+                        .orElseThrow(() -> new AppException(ErrorCode.PRODUCT_NOT_FOUND));
+
+                NewsProduct np = NewsProduct.builder()
+                        .news(news)
+                        .product(product)
+                        // .createdBy(currentUser.getId()) // Nếu có user login
+                        .build();
+                newsProductRepository.save(np);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public void removeProductFromNews(Long newsId, Long productId) {
+        newsProductRepository.deleteByNewsIdAndProductId(newsId, productId);
+    }
+
+    @Override
+    public List<ProductResponse> getProductsByNews(Long newsId) {
+        // Lấy list NewsProduct -> map sang Product -> map sang ProductResponse
+        List<NewsProduct> list = newsProductRepository.findAllByNewsId(newsId);
+        return list.stream()
+                .map(np -> productMapper.fromProductToProductResponse(np.getProduct()))
+                .toList();
     }
 
     private News getNewsById(Long id) {

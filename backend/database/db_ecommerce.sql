@@ -466,44 +466,32 @@ CREATE TABLE payments (
     CONSTRAINT fk_payments__orders FOREIGN KEY (order_id) REFERENCES orders(id)
 );
 
+CREATE TABLE coupon_usages (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    coupon_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    order_id BIGINT NOT NULL,
+    discount_amount DECIMAL(15, 2) NOT NULL, -- Lưu lại giá trị đã giảm tại thời điểm đó
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_usages__coupons FOREIGN KEY (coupon_id) REFERENCES coupons(id),
+    CONSTRAINT fk_usages__users FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_usages__orders FOREIGN KEY (order_id) REFERENCES orders(id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- CHUA LAM
+CREATE TABLE news_products (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    news_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    CONSTRAINT fk_news_products__news FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
+    CONSTRAINT fk_news_products__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    UNIQUE (news_id, product_id)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng banners
 CREATE TABLE banners (
-	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL UNIQUE,
     image TEXT NOT NULL,
     link_url VARCHAR(500),
@@ -517,13 +505,5 @@ CREATE TABLE banners (
     deleted_at DATETIME
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE TABLE news_products (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    news_id BIGINT NOT NULL,
-    product_id BIGINT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    created_by BIGINT,
-    CONSTRAINT fk_news_products__news FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
-    CONSTRAINT fk_news_products__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    UNIQUE (news_id, product_id)
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+
