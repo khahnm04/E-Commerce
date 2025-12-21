@@ -20,7 +20,7 @@ export const Header = () => {
       label: "Giỏ hàng",
       icon: "/assets/images/icon-cart.svg",
       bgClass: "",
-      onClick: undefined,
+      onClick: () => router.push('/cart'),
     },
     {
       id: 2,
@@ -37,7 +37,7 @@ export const Header = () => {
       <div style={{
         background: "linear-gradient(180deg, #BF4251 0%, #D70018 100%)"
       }}>
-        <div className="container py-[16px] flex gap-[12px] justify-between items-center">
+        <div className="max-w-[1232px] mx-auto px-4 py-[16px] flex gap-[12px] justify-between items-center">
 
           <HeaderLogo />
 

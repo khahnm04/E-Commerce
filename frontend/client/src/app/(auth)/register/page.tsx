@@ -236,7 +236,7 @@ export default function RegisterPage() {
           <p className="font-[400] text-[14px] md:text-[16px] text-[#71717a]">
             Đăng ký bằng tài khoản mạng xã hội
           </p>
-          <div className="flex flex-col sm:flex-row gap-3 md:gap-[20px] w-full sm:w-auto cursor-pointer">
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-[20px] w-full sm:w-auto">
             {socialButtons && (
               socialButtons.map((social) => (
                 <SocialButton

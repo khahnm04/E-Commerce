@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react";
-import { FaGaugeHigh, FaGear, FaListCheck, FaPowerOff, FaTableCellsLarge, FaTableList, FaUser, FaUserGear, FaUserGroup } from "react-icons/fa6";
+import { FaBoxOpen, FaBoxesStacked, FaBullhorn, FaGift, FaGaugeHigh, FaGear, FaListCheck, FaListUl, FaNewspaper, FaPowerOff, FaStore, FaTag, FaUserGear, FaUsers, FaWarehouse, FaBell } from "react-icons/fa6";
 import { SiderMenu } from "./SiderMenu";
 
 export const Sider = (props: {
@@ -10,18 +10,28 @@ export const Sider = (props: {
   const menuList1 = [
     {
       name: "Tổng quan",
-      link: "#",
+      link: "/",
       icon: FaGaugeHigh
     },
     {
       name: "Quản lý danh mục",
-      link: "#",
-      icon: FaTableCellsLarge
+      link: "/category",
+      icon: FaListUl
     },
     {
-      name: "Quản lý tour",
+      name: "Quản lý sản phẩm",
       link: "#",
-      icon: FaTableList
+      icon: FaBoxOpen
+    },
+    {
+      name: "Thuộc tính sản phẩm",
+      link: "#",
+      icon: FaTag
+    },
+    {
+      name: "Biến thể sản phẩm",
+      link: "#",
+      icon: FaBoxesStacked
     },
     {
       name: "Quản lý đơn hàng",
@@ -29,14 +39,39 @@ export const Sider = (props: {
       icon: FaListCheck
     },
     {
-      name: "Quản lý người dùng",
+      name: "Thông tin kho",
       link: "#",
-      icon: FaUser
+      icon: FaWarehouse
     },
     {
-      name: "Thông tin liên hệ",
+      name: "Quản lý chi nhánh",
       link: "#",
-      icon: FaUserGroup
+      icon: FaStore
+    },
+    {
+      name: "Banner / Marketing",
+      link: "#",
+      icon: FaBullhorn
+    },
+    {
+      name: "Tin tức / Bài viết",
+      link: "#",
+      icon: FaNewspaper
+    },
+    {
+      name: "Mã giảm giá",
+      link: "#",
+      icon: FaGift
+    },
+    {
+      name: "Quản lý người dùng",
+      link: "#",
+      icon: FaUsers
+    },
+    {
+      name: "Thông báo",
+      link: "#",
+      icon: FaBell
     },
   ]
 

@@ -18,36 +18,52 @@ export default function CategoryPage() {
     'Hành động'
   ];
 
-  const [bodyHeaderList, setBodyHeaderList] = useState<any[]>();
-
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories`, {
-      headers: {
-        'Authorization': `Bearer ${process.env.NEXT_PUBLIC_API_AT}`,
-        'Content-Type': 'application/json',
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
-        console.log(data);
-        setBodyHeaderList(data.data);
-      })
-  }, [])
-
-  // const bodyHeaderList = [
-  //   {
-  //     id: 1,
-  //     name: "Danh mục 1",
-  //     avatar: "assets/images/tour-1.jpg",
-  //     position: 1,
-  //     status: "Hoạt động",
-  //     createdBy: "Lê Văn A",
-  //     createdAt: "16:30 - 20/10/2024",
-  //     updatedBy: "Lê Văn A",
-  //     updatedAt: "16:30 - 20/10/2024",
-  //   },
-  //   // ... các item khác
-  // ];
+  const [bodyHeaderList, setBodyHeaderList] = useState<any[]>([
+    {
+      id: 1,
+      name: "Điện thoại",
+      image: "https://cdn2.cellphones.com.vn/insecure/rs:fill:300:300/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png",
+      position: 1,
+      status: "Hoạt động",
+      createdBy: "Admin",
+      createdAt: "10:00 - 01/11/2025",
+      updatedBy: "Admin",
+      updatedAt: "10:00 - 01/11/2025",
+    },
+    {
+      id: 2,
+      name: "Laptop",
+      image: "https://cdn2.cellphones.com.vn/insecure/rs:fill:300:300/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png",
+      position: 2,
+      status: "Hoạt động",
+      createdBy: "Admin",
+      createdAt: "11:00 - 01/11/2025",
+      updatedBy: "Admin",
+      updatedAt: "11:00 - 01/11/2025",
+    },
+    {
+      id: 3,
+      name: "Tablet",
+      image: "https://cdn2.cellphones.com.vn/insecure/rs:fill:300:300/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png",
+      position: 3,
+      status: "Tạm dừng",
+      createdBy: "Admin",
+      createdAt: "12:00 - 01/11/2025",
+      updatedBy: "Admin",
+      updatedAt: "12:00 - 01/11/2025",
+    },
+    {
+      id: 4,
+      name: "Phụ kiện",
+      image: "https://cdn2.cellphones.com.vn/insecure/rs:fill:300:300/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-16-pro-max.png",
+      position: 4,
+      status: "Hoạt động",
+      createdBy: "Admin",
+      createdAt: "13:00 - 01/11/2025",
+      updatedBy: "Admin",
+      updatedAt: "13:00 - 01/11/2025",
+    },
+  ]);
 
   return (
     <>

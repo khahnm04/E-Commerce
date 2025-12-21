@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/alt-text */
+/* eslint-disable @next/next/no-img-element */
 "use client"
 import { useEffect } from "react";
 import Chart from 'chart.js/auto';
@@ -202,7 +204,7 @@ export default function HomePage() {
                 <td className="px-[24px] py-[10px] text-left border-b border-[#97979751] font-[600] text-[14px] text-[var(--color-text)]">
                   <div className="badge badge-orange">Khởi tạo</div>
                 </td>
-                <td className="px-[24px] py-[10px] text-left border-b border-[#97979751] font-[600] text-[14px] text-[var(--color-text)] text-right">
+                <td className="px-[24px] py-[10px] border-b border-[#97979751] font-[600] text-[14px] text-[var(--color-text)] text-right">
                   <div>16:20</div>
                   <div>01/01/2024</div>
                 </td>

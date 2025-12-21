@@ -231,7 +231,6 @@ public class CategoryServiceImpl implements CategoryService {
         log.info("Completed assigning {} products to category {}", productIds.size(), id);
     }
 
-
     @Override
     public PageResponse<ProductResponse> getAllProductsByCategoryId(int page, int size, String sort, Long id) {
         getCategoryById(id);

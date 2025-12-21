@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @next/next/no-img-element */
 "use client"
 import { AppButton } from "@/app/components/auth/AppButton";
 import { InputField } from "@/app/components/auth/InputField";
@@ -109,7 +112,7 @@ export default function LoginPage() {
         ])
         .onSuccess((event: any) => {
           event.preventDefault();
-          
+
           // Lấy giá trị từ form
           const phoneNumber = event.target.phoneNumber.value;
           const password = event.target.password.value;
@@ -228,7 +231,7 @@ export default function LoginPage() {
                 <div className="flex-1 h-px bg-[#E4E4E7]"></div>
               </div>
 
-              <div className="flex md:gap-[20px] gap-[10px] w-full items-center justify-center cursor-pointer">
+              <div className="flex md:gap-[20px] gap-[10px] w-full items-center justify-center">
                 {socialButtons && (
                   socialButtons.map((social) => (
                     <SocialButton

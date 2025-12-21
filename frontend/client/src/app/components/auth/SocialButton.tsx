@@ -8,7 +8,7 @@ export const SocialButton = (props: {
   return (
     <>
       <div
-        className="w-full sm:w-[210px] h-[60px] flex justify-center items-center font-[500] text-[14px] text-[#121214] rounded-[8px]"
+        className="w-full sm:w-[210px] h-[60px] flex justify-center items-center font-[500] text-[14px] text-[#121214] rounded-[8px] cursor-pointer hover:opacity-90 transition-opacity"
         style={{
           boxShadow: "0px 1px 4px 0px #0000000F, 0px 0px 24px -4px #0000000F"
         }}
