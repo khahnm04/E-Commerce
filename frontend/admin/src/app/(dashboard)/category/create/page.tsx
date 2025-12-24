@@ -1,143 +1,101 @@
-"use client"
-import "filepond/dist/filepond.min.css";
-import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
-import Link from "next/link";
-import { useFilePond } from "@/hooks/useFilePond";
+"use client";
+
+import { useMemo } from "react";
+import toast from "react-hot-toast";
+
+// Hooks & Components
 import { useTinyMCE } from "@/hooks/useTinyMCE";
+import { Form } from "@/app/components/shared/Form";
+import { FilePondWrapper } from "@/app/components/forms/FilePondWrapper";
+import { FormPageLayout } from "@/app/components/shared/FormPageLayout"; // Import Layout chung
 
-export default function CategoryPage() {
+// 1. Định nghĩa Interface
+interface CategoryFormValues {
+  name: string;
+  slug?: string;
+  parent?: string;
+  position?: string | number;
+  status: "active" | "inactive";
+  avatar?: File;
+  description?: string;
+}
 
-  const { TinyMCEEditorComponent, editorRef } = useTinyMCE();
+// Constants (Tách ra để code gọn hơn)
+const STATUS_OPTIONS = [
+  { value: "active", label: "Hoạt động" },
+  { value: "inactive", label: "Tạm dừng" },
+];
 
-  useFilePond();
+const MOCK_PARENT_OPTIONS = [
+  { value: "", label: "-- Chọn danh mục --" },
+  { value: "danh-muc-1", label: "Danh mục 1" },
+  { value: "danh-muc-2", label: "Danh mục 2" },
+];
 
+export default function CreateCategoryPage() {
+  const { TinyMCEEditorComponent } = useTinyMCE();
+
+  // 2. Cấu hình Fields
+  const fields = useMemo(() => [
+    { name: "name" as const, label: "Tên danh mục" },
+    { name: "slug" as const, label: "Chuỗi định danh URL", props: { placeholder: "Bỏ trống để tự động tạo" } },
+    {
+      name: "parent" as const,
+      label: "Danh mục cha",
+      type: "select" as const,
+      options: MOCK_PARENT_OPTIONS
+    },
+    { name: "position" as const, label: "Vị trí", type: "number" as const },
+    {
+      name: "status" as const,
+      label: "Trạng thái",
+      type: "select" as const,
+      options: STATUS_OPTIONS
+    },
+    {
+      name: "avatar" as const,
+      label: "Ảnh đại diện",
+      component: FilePondWrapper,
+      props: { accept: "image/*" },
+      className: "md:col-span-2",
+    },
+    {
+      name: "description" as const,
+      label: "Mô tả",
+      component: () => <>{TinyMCEEditorComponent}</>,
+      className: "md:col-span-2",
+    },
+  ], [TinyMCEEditorComponent]);
+
+  // 3. Validation Schema
+  const validationSchema = useMemo(() => [
+    { selector: "#name", rules: [{ rule: "required", errorMessage: "Vui lòng nhập tên danh mục!" }] },
+  ], []);
+
+  // 4. Handle Submit
+  const handleSubmit = (data: CategoryFormValues) => {
+    console.log("Form submitted", data);
+    toast.success("Tạo danh mục thành công!");
+  };
+
+  // 5. Render clean với FormPageLayout
   return (
-    <>
-      <h1 className="mt-0 mb-[30px] font-bold text-[32px] text-[var(--color-text)]">
-        Tạo danh mục
-      </h1>
-
-      <div className="bg-white border border-[#B9B9B9] rounded-[14px] md:p-[50px] p-[20px]">
-        <form
-          id="category-create-form"
-          className="grid md:grid-cols-2 grid-cols-1 gap-[30px]"
-        >
-          <div className="inner-group relative">
-            <label
-              className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-              htmlFor="name"
-            >
-              Tên danh mục
-            </label>
-            <input
-              type="text"
-              name="name"
-              id="name"
-              className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] px-[22px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[52px]"
-            />
-          </div>
-          <div className="inner-group relative">
-            <label
-              className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-              htmlFor="parent"
-            >
-              Danh mục cha
-            </label>
-            <select
-              name="parent"
-              id="parent"
-              className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] px-[22px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[52px]"
-            >
-              <option value="">
-                -- Chọn danh mục --
-              </option>
-              <option value="danh-muc-1">
-                Danh mục 1
-              </option>
-              <option value="danh-muc-2">
-                Danh mục 2
-              </option>
-            </select>
-          </div>
-          <div className="inner-group relative">
-            <label
-              className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-              htmlFor="position"
-            >
-              Vị trí
-            </label>
-            <input
-              type="text"
-              name="position"
-              id="position"
-              className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] px-[22px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[52px]"
-            />
-          </div>
-          <div className="inner-group relative">
-            <label
-              className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-              htmlFor="status"
-            >
-              Trạng thái
-            </label>
-            <select
-              name="status"
-              id="status"
-              className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] px-[22px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[52px]"
-            >
-              <option value="">
-                Hoạt động
-              </option>
-              <option value="">
-                Tạm dừng
-              </option>
-            </select>
-          </div>
-          <div className="inner-group relative inner-two-col md:col-span-2 col-span-1">
-            <label
-              className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-              htmlFor="avatar"
-            >Ảnh đại diện
-            </label>
-            <input
-              type="file"
-              name="avatar"
-              id="avatar"
-              className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] px-[22px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[52px]"
-              accept="image/*"
-              filepond-image="filepond-image"
-            />
-          </div>
-          <div className="inner-group relative inner-two-col md:col-span-2 col-span-1">
-            <label
-              className="inner-label block font-[600] text-[14px] text-[#606060] mb-[11px]"
-              htmlFor="description">
-              Mô tả
-            </label>
-            {/* <textarea
-              name="description"
-              id="description"
-              className="bg-[#F5F6FA] border border-[#D5D5D5] rounded-[4px] px-[22px] font-[500] text-[14px] text-[var(--color-text)] w-full h-[160px] py-[18px] px-[22px]"
-              textarea-mce
-            >
-            </textarea> */}
-            {TinyMCEEditorComponent}
-          </div>
-          <div className="inner-button inner-two-col md:col-span-2 col-span-1 text-center">
-            <button className="w-[274px] h-[56px] bg-[var(--color-primary)] rounded-[12px] font-[700] text-[18px] text-white opacity-[0.9] border-0 cursor-pointer hover:opacity-[1]">
-              Tạo mới
-            </button>
-          </div>
-        </form>
-        <div className="inner-back text-center mt-[30px]">
-          <Link
-            href="/category"
-            className="font-[700] text-[18px] text-[var(--color-primary)] underline"
-          >
-            Quay lại danh sách
-          </Link>
-        </div>
-      </div>
-    </>
-  )
+    <FormPageLayout
+      title="Tạo danh mục"
+      breadcrumbs={[
+        { name: "Trang chủ", link: "/" },
+        { name: "Danh mục", link: "/category" },
+        { name: "Tạo mới" },
+      ]}
+      backLink="/category"
+    >
+      <Form<CategoryFormValues>
+        id="category-create-form"
+        fields={fields}
+        validationSchema={validationSchema}
+        onSubmit={handleSubmit}
+        submitButtonText="Tạo mới"
+      />
+    </FormPageLayout>
+  );
 }

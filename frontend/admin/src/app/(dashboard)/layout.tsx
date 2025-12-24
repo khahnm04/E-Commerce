@@ -1,5 +1,6 @@
 "use client"
 import { useState } from "react";
+import { Toaster } from "react-hot-toast";
 import { Header } from "../components/header/Header";
 import { Sider } from "../components/sider/Sider";
 
@@ -13,6 +14,10 @@ export default function DashboardLayout({
 
   return (
     <>
+      <Toaster
+        position="top-right"
+      />
+
       {/* Header */}
       <Header
         activeSider={activeSider}

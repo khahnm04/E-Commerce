@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from 'react';
 import * as FilePond from 'filepond';
 import 'filepond/dist/filepond.min.css';

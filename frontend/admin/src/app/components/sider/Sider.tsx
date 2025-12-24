@@ -20,18 +20,23 @@ export const Sider = (props: {
     },
     {
       name: "Quản lý sản phẩm",
-      link: "#",
+      link: "/product",
       icon: FaBoxOpen
     },
     {
       name: "Thuộc tính sản phẩm",
-      link: "#",
-      icon: FaTag
+      link: "/attribute",
+      icon: FaListCheck
     },
     {
       name: "Biến thể sản phẩm",
-      link: "#",
+      link: "/variants",
       icon: FaBoxesStacked
+    },
+    {
+      name: "Quản lý thương hiệu",
+      link: "/brand",
+      icon: FaStore
     },
     {
       name: "Quản lý đơn hàng",
@@ -70,7 +75,7 @@ export const Sider = (props: {
     },
     {
       name: "Thông báo",
-      link: "#",
+      link: "/notification",
       icon: FaBell
     },
   ]
@@ -95,7 +100,6 @@ export const Sider = (props: {
   ]
 
   const { activeSider, setActiveSider } = props;
-  const [activeMenu, setActiveMenu] = useState(menuList1[0].name);
 
   return (
     <>
@@ -104,14 +108,10 @@ export const Sider = (props: {
         lg:block ${activeSider ? 'block' : 'hidden'}`}>
         <SiderMenu
           menuList={menuList1}
-          activeMenu={activeMenu}
-          setActiveMenu={setActiveMenu}
         />
         <hr className="border border-[#E0E0E0] my-[16px] mx-0" />
         <SiderMenu
           menuList={menuList2}
-          activeMenu={activeMenu}
-          setActiveMenu={setActiveMenu}
         />
       </nav>
       <div

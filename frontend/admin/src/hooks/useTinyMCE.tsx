@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, ReactNode } from "react";
 import dynamic from "next/dynamic";
 import type { Editor as TinyMCEEditor } from "tinymce";
 
@@ -15,11 +15,17 @@ interface UseTinyMCEProps {
   onChange?: (content: string) => void;
 }
 
+// Định nghĩa kiểu trả về
+interface UseTinyMCEReturn {
+  TinyMCEEditorComponent: ReactNode;
+  editorRef: React.MutableRefObject<TinyMCEEditor | null>;
+}
+
 export function useTinyMCE({
   initialValue = "",
   height = 300,
   onChange,
-}: UseTinyMCEProps = {}) {
+}: UseTinyMCEProps = {}): UseTinyMCEReturn {
   const editorRef = useRef<TinyMCEEditor | null>(null);
 
   const TinyMCEEditorComponent = (
@@ -34,24 +40,11 @@ export function useTinyMCE({
         height,
         menubar: false,
         plugins: [
-          "advlist",
-          "autolink",
-          "lists",
-          "link",
-          "image",
-          "charmap",
-          "preview",
-          "anchor",
-          "searchreplace",
-          "visualblocks",
-          "code",
-          "fullscreen",
-          "insertdatetime",
-          "media",
-          "table",
-          "code",
-          "help",
-          "wordcount",
+          // List plugins giữ nguyên
+          "advlist", "autolink", "lists", "link", "image", "charmap",
+          "preview", "anchor", "searchreplace", "visualblocks", "code",
+          "fullscreen", "insertdatetime", "media", "table", "code",
+          "help", "wordcount",
         ],
         toolbar:
           "undo redo | blocks | bold italic forecolor | " +
