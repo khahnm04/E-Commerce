@@ -17,8 +17,10 @@ public abstract class BaseResponse<T> implements Serializable {
     private T id;
     private LocalDateTime createdAt;
     private Long createdBy;
+    private String createdName;
     private LocalDateTime updatedAt;
     private Long updatedBy;
+    private String updatedName;
     private LocalDateTime deletedAt;
 
 }

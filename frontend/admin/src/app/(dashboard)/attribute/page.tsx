@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
-import { useState, useMemo, ChangeEvent } from "react";
+import { useState, useMemo, ChangeEvent, useEffect } from "react";
 import toast from "react-hot-toast";
 
 // Components
@@ -14,6 +16,7 @@ interface Attribute {
   name: string;
   code: string;
   description: string;
+  status: string; // Thêm trường status
   createdBy: string;
   createdAt: string;
   updatedBy: string;
@@ -34,6 +37,7 @@ export default function AttributePage() {
       name: "Màu sắc",
       code: "COLOR",
       description: "Màu sắc của sản phẩm",
+      status: "Hoạt động",
       createdBy: "Admin",
       createdAt: "10:00 - 01/11/2025",
       updatedBy: "Admin",
@@ -44,6 +48,7 @@ export default function AttributePage() {
       name: "Kích thước",
       code: "SIZE",
       description: "Kích thước sản phẩm (S, M, L, XL)",
+      status: "Hoạt động",
       createdBy: "Admin",
       createdAt: "11:00 - 01/11/2025",
       updatedBy: "Admin",
@@ -54,6 +59,7 @@ export default function AttributePage() {
       name: "Chất liệu",
       code: "MATERIAL",
       description: "Chất liệu sản phẩm",
+      status: "Tạm dừng",
       createdBy: "Admin",
       createdAt: "12:00 - 01/11/2025",
       updatedBy: "Admin",
@@ -65,52 +71,27 @@ export default function AttributePage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
-  // 3. Header List
-  const tableHeaderList = [
-    'Tên thuộc tính',
-    'Code',
-    'Mô tả',
-    'Tạo bởi',
-    'Cập nhật bởi',
-    'Hành động'
-  ];
+  // 3. Handlers
 
-  // 4. Renderers tối ưu với useMemo
-  const renderers = useMemo(() => ({
-    name: (item: Attribute) => (
-      <span className="font-semibold text-[#var(--color-text)]">{item.name}</span>
-    ),
-    code: (item: Attribute) => (
-      <span className="inline-block bg-blue-50 text-blue-600 px-2 py-1 rounded text-xs font-bold uppercase">
-        {item.code}
-      </span>
-    ),
-    description: (item: Attribute) => (
-      <span className="max-w-[200px] block truncate text-gray-600" title={item.description}>
-        {item.description}
-      </span>
-    ),
-    createdBy: (item: Attribute) => (
-      <div>
-        <div className="font-medium">{item.createdBy}</div>
-        <div className="text-[12px] text-gray-500">{item.createdAt}</div>
-      </div>
-    ),
-    updatedBy: (item: Attribute) => (
-      <div>
-        <div className="font-medium">{item.updatedBy}</div>
-        <div className="text-[12px] text-gray-500">{item.updatedAt}</div>
-      </div>
-    ),
-  }), []);
+  // Hàm xử lý thay đổi trạng thái nhanh (Sẽ gọi API PATCH trong thực tế)
+  const handleStatusChange = async (id: number | string, newStatus: string) => {
+    try {
+      // Giả lập gọi API thành công
+      // await attributeService.update(id, { status: newStatus });
 
-  // Handlers
-  const handleSelectAll = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.checked) {
-      setSelectedItems(data.map(item => item.id));
-    } else {
-      setSelectedItems([]);
+      setData((prevData) =>
+        prevData.map((item) =>
+          item.id === id ? { ...item, status: newStatus } : item
+        )
+      );
+      toast.success(`Cập nhật trạng thái thành công!`);
+    } catch (error) {
+      toast.error("Không thể cập nhật trạng thái");
     }
+  };
+
+  const handleSelectAll = (e: ChangeEvent<HTMLInputElement>) => {
+    setSelectedItems(e.target.checked ? data.map(item => item.id) : []);
   };
 
   const handleSelectItem = (id: number | string) => {
@@ -144,6 +125,70 @@ export default function AttributePage() {
     }
   };
 
+  // 4. Header List
+  const tableHeaderList = [
+    'Tên thuộc tính',
+    'Code',
+    'Mô tả',
+    'Trạng thái', // Thêm cột Trạng thái
+    'Tạo bởi',
+    'Cập nhật bởi',
+    'Hành động'
+  ];
+
+  // 5. Renderers tối ưu với useMemo
+  const renderers = useMemo(() => ({
+    name: (item: Attribute) => (
+      <span className="font-semibold text-[#var(--color-text)]">{item.name}</span>
+    ),
+    code: (item: Attribute) => (
+      <span className="inline-block bg-blue-50 text-blue-600 px-2 py-1 rounded text-xs font-bold uppercase">
+        {item.code}
+      </span>
+    ),
+    description: (item: Attribute) => (
+      <span className="max-w-[200px] block truncate text-gray-600" title={item.description}>
+        {item.description}
+      </span>
+    ),
+    // Renderer cho cột trạng thái với thẻ select để cập nhật nhanh
+    status: (item: Attribute) => (
+      <select
+        value={item.status}
+        onChange={(e) => handleStatusChange(item.id, e.target.value)}
+        className={`px-3 py-1 text-sm font-semibold rounded-[8px] border-none outline-none cursor-pointer transition-colors ${item.status === "Hoạt động"
+          ? "bg-[#D1FAE5] text-[#065F46]"
+          : "bg-[#FEE2E2] text-[#991B1B]"
+          }`}
+      >
+        <option
+          value="Hoạt động"
+          className="bg-white text-[#000000] cursor-pointer"
+        >
+          Hoạt động
+        </option>
+        <option
+          value="Tạm dừng"
+          className="bg-white text-[#000000] cursor-pointer"
+        >
+          Tạm dừng
+        </option>
+      </select>
+    ),
+    createdBy: (item: Attribute) => (
+      <div>
+        <div className="font-medium">{item.createdBy}</div>
+        <div className="text-[12px] text-gray-500">{item.createdAt}</div>
+      </div>
+    ),
+    updatedBy: (item: Attribute) => (
+      <div>
+        <div className="font-medium">{item.updatedBy}</div>
+        <div className="text-[12px] text-gray-500">{item.updatedAt}</div>
+      </div>
+    ),
+  }), [data]); // Thêm data vào dependency để update UI khi đổi trạng thái
+
   return (
     <main>
       <h1 className="mt-0 mb-1.5 font-bold text-[32px] text-[var(--color-text)]">
@@ -157,7 +202,6 @@ export default function AttributePage() {
         ]}
       />
 
-      {/* Sử dụng Shared Filter */}
       <Filter
         status={status} setStatus={setStatus}
         creator={creator} setCreator={setCreator}
@@ -166,10 +210,8 @@ export default function AttributePage() {
         onClear={handleClearFilters}
       />
 
-      {/* Sử dụng Shared Action Bar */}
       <ActionBar createLink="/attribute/create" trashLink="/attribute/trash" />
 
-      {/* Table */}
       <div className="mb-[15px]">
         <Table<Attribute>
           tableHeaderList={tableHeaderList}
@@ -178,16 +220,15 @@ export default function AttributePage() {
           handleSelectAll={handleSelectAll}
           handleSelectItem={handleSelectItem}
           handleDeleteClick={handleDeleteClick}
+          handleStatusChange={handleStatusChange} // Truyền prop mới vào Table
           updateLink="/attribute/update"
           renderers={renderers}
-          centeredColumns={[1, 5]} // Căn giữa cột Code và Hành động
+          centeredColumns={[1, 3, 6]} // Căn giữa Code (1), Trạng thái (3), Hành động (6)
         />
       </div>
 
-      {/* Sử dụng Shared Pagination */}
       <Pagination total={data.length} />
 
-      {/* Sử dụng Shared Modal */}
       <DeleteModal
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}

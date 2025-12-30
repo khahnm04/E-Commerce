@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, ReactNode } from "react";
+import { useRef, ReactNode, useCallback } from "react";
 import dynamic from "next/dynamic";
 import type { Editor as TinyMCEEditor } from "tinymce";
 
@@ -15,10 +15,12 @@ interface UseTinyMCEProps {
   onChange?: (content: string) => void;
 }
 
-// Định nghĩa kiểu trả về
+// Định nghĩa kiểu trả về rõ ràng bao gồm setContent
 interface UseTinyMCEReturn {
   TinyMCEEditorComponent: ReactNode;
   editorRef: React.MutableRefObject<TinyMCEEditor | null>;
+  getContent: () => string;
+  setContent: (content: string) => void; // Thêm hàm này để fill data cho trang Update
 }
 
 export function useTinyMCE({
@@ -27,6 +29,21 @@ export function useTinyMCE({
   onChange,
 }: UseTinyMCEProps = {}): UseTinyMCEReturn {
   const editorRef = useRef<TinyMCEEditor | null>(null);
+
+  // Hàm lấy nội dung an toàn
+  const getContent = useCallback(() => {
+    if (editorRef.current) {
+      return editorRef.current.getContent();
+    }
+    return "";
+  }, []);
+
+  // Hàm set nội dung (Dùng cho trường hợp Cập nhật dữ liệu từ API)
+  const setContent = useCallback((content: string) => {
+    if (editorRef.current) {
+      editorRef.current.setContent(content);
+    }
+  }, []);
 
   const TinyMCEEditorComponent = (
     <Editor
@@ -40,11 +57,9 @@ export function useTinyMCE({
         height,
         menubar: false,
         plugins: [
-          // List plugins giữ nguyên
           "advlist", "autolink", "lists", "link", "image", "charmap",
           "preview", "anchor", "searchreplace", "visualblocks", "code",
-          "fullscreen", "insertdatetime", "media", "table", "code",
-          "help", "wordcount",
+          "fullscreen", "insertdatetime", "media", "table", "help", "wordcount",
         ],
         toolbar:
           "undo redo | blocks | bold italic forecolor | " +
@@ -56,5 +71,10 @@ export function useTinyMCE({
     />
   );
 
-  return { TinyMCEEditorComponent, editorRef };
+  return {
+    TinyMCEEditorComponent,
+    editorRef,
+    getContent,
+    setContent // Trả về setContent
+  };
 }

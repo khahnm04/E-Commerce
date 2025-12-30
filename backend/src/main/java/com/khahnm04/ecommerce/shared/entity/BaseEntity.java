@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Formula;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -34,6 +35,9 @@ public abstract class BaseEntity<T> implements Serializable {
     @Column(name = "created_by")
     private Long createdBy;
 
+    @Formula("(SELECT u.full_name FROM users u WHERE u.id = created_by)")
+    private String createdName;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -41,6 +45,9 @@ public abstract class BaseEntity<T> implements Serializable {
     @LastModifiedBy
     @Column(name = "updated_by")
     private Long updatedBy;
+
+    @Formula("(SELECT u.full_name FROM users u WHERE u.id = updated_by)")
+    private String updatedName;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

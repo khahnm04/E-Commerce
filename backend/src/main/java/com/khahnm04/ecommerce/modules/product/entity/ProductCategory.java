@@ -1,6 +1,6 @@
-package com.khahnm04.ecommerce.modules.category.entity;
+package com.khahnm04.ecommerce.modules.product.entity;
 
-import com.khahnm04.ecommerce.modules.product.entity.Product;
+import com.khahnm04.ecommerce.modules.category.entity.Category;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;

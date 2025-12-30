@@ -35,6 +35,10 @@ public class Category extends BaseEntity<Long> {
     private String path;
 
     @Builder.Default
+    @Column(name = "position")
+    private Integer position = 0;
+
+    @Builder.Default
     @ColumnDefault("'ACTIVE'")
     @Column(name = "status")
     @Enumerated(EnumType.STRING)

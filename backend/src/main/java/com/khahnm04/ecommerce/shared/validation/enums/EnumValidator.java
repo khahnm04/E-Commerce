@@ -13,6 +13,7 @@ public class EnumValidator implements ConstraintValidator<ValidEnum, CharSequenc
     public void initialize(ValidEnum enumValue) {
         acceptedValues = Stream.of(enumValue.enumClass().getEnumConstants())
                 .map(Enum::name)
+                .map(String::toUpperCase)
                 .toList();
     }
 

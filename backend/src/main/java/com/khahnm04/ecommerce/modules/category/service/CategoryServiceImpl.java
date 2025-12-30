@@ -1,14 +1,14 @@
 package com.khahnm04.ecommerce.modules.category.service;
 
+import com.khahnm04.ecommerce.modules.category.dto.request.*;
+import com.khahnm04.ecommerce.modules.category.repository.specification.CategorySpecification;
 import com.khahnm04.ecommerce.shared.enums.CategoryStatus;
 import com.khahnm04.ecommerce.shared.util.SortUtils;
-import com.khahnm04.ecommerce.modules.category.dto.request.AssignProductToCategoryRequest;
-import com.khahnm04.ecommerce.modules.category.dto.request.CategoryRequest;
 import com.khahnm04.ecommerce.modules.category.dto.response.CategoryResponse;
 import com.khahnm04.ecommerce.shared.dto.PageResponse;
 import com.khahnm04.ecommerce.modules.product.dto.response.ProductResponse;
 import com.khahnm04.ecommerce.modules.category.entity.Category;
-import com.khahnm04.ecommerce.modules.category.entity.ProductCategory;
+import com.khahnm04.ecommerce.modules.product.entity.ProductCategory;
 import com.khahnm04.ecommerce.modules.product.entity.Product;
 import com.khahnm04.ecommerce.core.exception.AppException;
 import com.khahnm04.ecommerce.core.exception.ErrorCode;
@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,7 +45,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryResponse createCategory(CategoryRequest request) {
+    public CategoryResponse createCategory(CategoryRequest request, MultipartFile image) {
         if (categoryRepository.existsBySlug(request.getSlug())) {
             throw new AppException(ErrorCode.CATEGORY_EXISTED);
         }
@@ -53,38 +54,49 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         Category category = categoryMapper.fromCategoryRequestToCategory(request);
-        category.setImage(cloudinaryService.upload(request.getImage()));
+        category.setImage(cloudinaryService.upload(image));
 
         category.setParent(Optional.ofNullable(request.getParentId())
                 .map(this::getCategoryById)
                 .orElse(null));
 
-        String path = Optional.ofNullable(category.getParent())
+        String parentPath = Optional.ofNullable(category.getParent())
                 .map(Category::getPath)
                 .orElse("");
 
         Category savedCategory = categoryRepository.save(category);
-        savedCategory.setPath(path + savedCategory.getId() + "/");
+        savedCategory.setPath(parentPath + savedCategory.getId() + "/");
         savedCategory = categoryRepository.save(savedCategory);
 
-        log.info("Saved new request with id {}", savedCategory.getId());
+        log.info("Created category id: {}", savedCategory.getId());
         return categoryMapper.toCategoryResponse(savedCategory);
     }
 
     @Override
-    public PageResponse<CategoryResponse> getAllCategories(int page, int size, String sort) {
-        Pageable pageable = PageRequest.of(page, size, SortUtils.parseSort(sort));
-        Page<Category> categoryPage = categoryRepository.findAllByDeletedAtIsNull(pageable);
-        Page<CategoryResponse> dtoPage = categoryPage.map(categoryMapper::toCategoryResponse);
-        return PageResponse.fromPage(dtoPage);
+    public PageResponse<CategoryResponse> getAllCategories(CategoryFilterRequest filter) {
+        Pageable pageable = PageRequest.of(filter.getPage() - 1, filter.getSize(), SortUtils.parseSort(filter.getSort()));
+
+        Specification<Category> spec = CategorySpecification.notDeleted()
+                .and(CategorySpecification.hasParent(filter.getParentId()))
+                .and(CategorySpecification.hasStatus(filter.getStatus()))
+                .and(CategorySpecification.searchByName(filter.getSearch()))
+                .and(CategorySpecification.hasTimestampBetween(filter.getDateType(), filter.getStartDate(), filter.getEndDate()));
+
+        Page<Category> categoryPage = categoryRepository.findAll(spec, pageable);
+        return PageResponse.fromPage(categoryPage.map(categoryMapper::toCategoryResponse));
     }
 
     @Override
-    public PageResponse<CategoryResponse> getAllDeletedCategories(int page, int size, String sort) {
-        Pageable pageable = PageRequest.of(page, size, SortUtils.parseSort(sort));
-        Page<Category> categoryPage = categoryRepository.findAllByDeletedAtIsNotNull(pageable);
-        Page<CategoryResponse> dtoPage = categoryPage.map(categoryMapper::toCategoryResponse);
-        return PageResponse.fromPage(dtoPage);
+    public PageResponse<CategoryResponse> getAllDeletedCategories(CategoryFilterRequest filter) {
+        Pageable pageable = PageRequest.of(filter.getPage() - 1, filter.getSize(), SortUtils.parseSort(filter.getSort()));
+
+        Specification<Category> spec = CategorySpecification.isDeleted()
+                .and(CategorySpecification.hasParent(filter.getParentId()))
+                .and(CategorySpecification.searchByName(filter.getSearch()))
+                .and(CategorySpecification.hasTimestampBetween(filter.getDateType(), filter.getStartDate(), filter.getEndDate()));
+
+        Page<Category> categoryPage = categoryRepository.findAll(spec, pageable);
+        return PageResponse.fromPage(categoryPage.map(categoryMapper::toCategoryResponse));
     }
 
     @Override
@@ -94,14 +106,12 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryResponse getCategoryDetailBySlug(String slug) {
-        Category category = categoryRepository.findBySlug(slug)
-                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
-        return categoryMapper.toCategoryResponse(category);
+        return categoryMapper.toCategoryResponse(getCategoryBySlug(slug));
     }
 
     @Override
     @Transactional
-    public CategoryResponse updateCategory(Long id, CategoryRequest request, MultipartFile file) {
+    public CategoryResponse updateCategory(Long id, CategoryRequest request, MultipartFile image) {
         Category category = getCategoryById(id);
 
         if (StringUtils.hasText(request.getName())
@@ -114,93 +124,87 @@ public class CategoryServiceImpl implements CategoryService {
         }
 
         categoryMapper.updateCategory(category, request);
-        category.setImage(cloudinaryService.upload(file));
+        if (image != null && !image.isEmpty()) {
+            category.setImage(cloudinaryService.upload(image));
+        }
 
         Long currentParentId = (category.getParent() != null) ? category.getParent().getId() : null;
         Long newParentId = request.getParentId();
 
         if (Objects.equals(currentParentId, newParentId)) {
-            Category savedCategory = categoryRepository.save(category);
-            log.info("Updated request (no parent change) with id {}", savedCategory.getId());
-            return categoryMapper.toCategoryResponse(savedCategory);
-        } else {
-            String oldPath = category.getPath();
-            String newPath = category.getId() + "/";
-            Category newParent = null;
-
-            if (newParentId != null) {
-                newParent = getCategoryById(newParentId);
-                if (newParent.getPath().startsWith(oldPath)) {
-                    throw new AppException(ErrorCode.CANNOT_MOVE_PARENT_TO_CHILD);
-                }
-                newPath = newParent.getPath() + newPath;
-            }
-
-            category.setParent(newParent);
-            category.setPath(newPath);
-
-            Category savedCategory = categoryRepository.save(category);
-            categoryRepository.updateDescendantPaths(oldPath + "%", newPath, oldPath.length());
-
-            log.info("Updated request and moved tree with id {}", savedCategory.getId());
-            return categoryMapper.toCategoryResponse(savedCategory);
+            return categoryMapper.toCategoryResponse(categoryRepository.save(category));
         }
+
+        String oldPath = category.getPath();
+        String newPath = category.getId() + "/";
+        Category newParent = null;
+
+        if (newParentId != null) {
+            newParent = getCategoryById(newParentId);
+            if (newParent.getPath().startsWith(oldPath)) {
+                throw new AppException(ErrorCode.CANNOT_MOVE_PARENT_TO_CHILD);
+            }
+            newPath = newParent.getPath() + newPath;
+        }
+
+        category.setParent(newParent);
+        category.setPath(newPath);
+
+        Category savedCategory = categoryRepository.save(category);
+        categoryRepository.updateDescendantPaths(oldPath + "%", newPath, oldPath.length());
+        log.info("Updated category tree for id {}", savedCategory.getId());
+        return categoryMapper.toCategoryResponse(savedCategory);
     }
 
     @Override
     @Transactional
-    public void updateCategoryStatus(Long id, String status) {
+    public void updateCategoryStatus(Long id, UpdateStatusRequest request) {
         Category category = getCategoryById(id);
-
-        boolean isValid = Arrays.stream(CategoryStatus.values())
-                .anyMatch(e -> e.name().equalsIgnoreCase(status));
-        if (!isValid) {
+        CategoryStatus newStatus;
+        try {
+            newStatus = CategoryStatus.valueOf(request.getStatus().toUpperCase());
+        } catch (IllegalArgumentException e) {
             throw new AppException(ErrorCode.INVALID_ENUM_VALUE);
         }
-
-        String pathWithWildcard = category.getPath() + "%";
-
-        if (CategoryStatus.INACTIVE.name().equalsIgnoreCase(status)) {
-            category.setStatus(CategoryStatus.INACTIVE_MANUAL);
-            categoryRepository.save(category);
-            categoryRepository.updateDescendantStatusesByPath(
-                    pathWithWildcard, category.getId(), CategoryStatus.INACTIVE_CASCADE, CategoryStatus.ACTIVE);
-        } else if (CategoryStatus.ACTIVE.name().equalsIgnoreCase(status)) {
-            category.setStatus(CategoryStatus.ACTIVE);
-            categoryRepository.save(category);
-            categoryRepository.updateDescendantStatusesByPath(
-                    pathWithWildcard, category.getId(), CategoryStatus.ACTIVE, CategoryStatus.INACTIVE_CASCADE);
-        } else {
-            throw new RuntimeException("status action is invalid!");
+        if (category.getStatus() == newStatus) {
+            return;
         }
+        category.setStatus(newStatus);
+        categoryRepository.save(category);
+        log.info("Changed status for category id {} from {} to {}", id, category.getStatus(), newStatus);
     }
 
     @Override
+    @Transactional
     public void softDeleteCategory(Long id) {
         Category category = getCategoryById(id);
 
-        if (categoryRepository.existsByParent(id)) {
-            throw new AppException(ErrorCode.CATEGORY_HAS_CHILDREN);
+        List<Long> allRelatedIds = categoryRepository.findAllIdsByPath(category.getPath());
+
+        boolean hasProducts = productCategoryRepository.existsByCategoryIdIn(allRelatedIds);
+        if (hasProducts) {
+            throw new AppException(ErrorCode.CATEGORY_HAS_PRODUCTS);
         }
 
-        category.setDeletedAt(LocalDateTime.now());
-        categoryRepository.save(category);
-        log.info("Category with id {} has been soft deleted", id);
+        categoryRepository.softDeleteAllByIds(allRelatedIds, LocalDateTime.now());
+        log.info("Soft deleted category id {} and {} descendants", id, allRelatedIds.size() - 1);
     }
 
     @Override
-    public void deleteCategory(Long id) {
-        Category category = getCategoryById(id);
-        categoryRepository.delete(category);
-        log.info("Category with id {} has been deleted", id);
-    }
-
-    @Override
+    @Transactional
     public void restoreCategory(Long id) {
         Category category = getCategoryById(id);
-        category.setDeletedAt(null);
-        categoryRepository.save(category);
-        log.info("Category restored with id {}", id);
+
+        if (category.getDeletedAt() == null) {
+            return;
+        }
+
+        LocalDateTime deletedTime = category.getDeletedAt();
+        LocalDateTime start = deletedTime.minusSeconds(2);
+        LocalDateTime end = deletedTime.plusSeconds(2);
+
+        categoryRepository.restoreDescendantsByTimeRange(category.getPath(), start, end);
+        log.info("Restored category id {} and matching descendants", id);
     }
 
     @Override
@@ -228,7 +232,7 @@ public class CategoryServiceImpl implements CategoryService {
                 .toList();
 
         productCategoryRepository.saveAll(newRelations);
-        log.info("Completed assigning {} products to request {}", productIds.size(), id);
+        log.info("Assigned {} products to category {}", productIds.size(), id);
     }
 
     @Override
@@ -240,8 +244,30 @@ public class CategoryServiceImpl implements CategoryService {
         return PageResponse.fromPage(dtoPage);
     }
 
+    @Override
+    @Transactional
+    public void handleBulkAction(CategoryBulkActionRequest request) {
+        Set<Long> categoryIds = request.getCategoryIds();
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            throw new AppException(ErrorCode.BULK_ACTION_REQUIRED_IDS);
+        }
+        String action = request.getAction().toUpperCase();
+        switch (action) {
+            case "ACTIVE"   -> categoryRepository.updateStatusByIds(CategoryStatus.ACTIVE, categoryIds);
+            case "INACTIVE" -> categoryRepository.updateStatusByIds(CategoryStatus.INACTIVE, categoryIds);
+            case "DELETE"   -> categoryRepository.softDeleteByIds(LocalDateTime.now(), categoryIds);
+            case "RESTORE"  ->  categoryRepository.restoreDeleteByIds(categoryIds);
+            default         -> throw new AppException(ErrorCode.INVALID_BULK_ACTION);
+        }
+    }
+
     private Category getCategoryById(Long id) {
         return categoryRepository.findById(id)
+                .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
+    }
+
+    private Category getCategoryBySlug(String slug) {
+        return categoryRepository.findBySlug(slug)
                 .orElseThrow(() -> new AppException(ErrorCode.CATEGORY_NOT_FOUND));
     }
 

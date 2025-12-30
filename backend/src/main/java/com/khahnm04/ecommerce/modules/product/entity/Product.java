@@ -3,7 +3,6 @@ package com.khahnm04.ecommerce.modules.product.entity;
 import com.khahnm04.ecommerce.shared.enums.ProductStatus;
 import com.khahnm04.ecommerce.modules.brand.entity.Brand;
 import com.khahnm04.ecommerce.shared.entity.BaseEntity;
-import com.khahnm04.ecommerce.modules.category.entity.ProductCategory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;

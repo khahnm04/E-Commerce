@@ -17,6 +17,7 @@ public class CategoryResponse extends BaseResponse<Long> {
     private String description;
     private String image;
     private Long parentId;
+    private Integer position;
     private String path;
     private CategoryStatus status;
 

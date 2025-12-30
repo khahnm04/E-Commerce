@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState, useMemo, ChangeEvent } from "react";
+import { useState, useMemo, ChangeEvent, useEffect } from "react";
+import toast from "react-hot-toast";
 import { Table } from "@/app/components/shared/Table";
 import { Breadcrumb } from "@/app/components/shared/Breadcrumb";
 import { Filter, ActionBar, Pagination, DeleteModal } from "@/app/components/shared/list";
@@ -49,40 +50,25 @@ export default function ProductPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<number | null>(null);
 
-  // Helper function: Status Class
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case "Hoạt động": return "bg-[#D1FAE5] text-[#065F46]";
-      case "Tạm dừng": return "bg-[#FEE2E2] text-[#991B1B]";
-      default: return "bg-gray-200 text-gray-800";
+  // 2. Handlers
+
+  // Hàm xử lý thay đổi trạng thái nhanh qua API
+  const handleStatusChange = async (id: number | string, newStatus: string) => {
+    try {
+      // Giả lập gọi API cập nhật trạng thái
+      // await productService.updateStatus(id, newStatus);
+
+      setData((prevData) =>
+        prevData.map((item) =>
+          item.id === id ? { ...item, status: newStatus } : item
+        )
+      );
+      toast.success(`Đã chuyển trạng thái sang: ${newStatus}`);
+    } catch (error) {
+      toast.error("Cập nhật trạng thái thất bại!");
     }
   };
 
-  // 2. Table Renderers
-  const tableHeaderList = ['Tên sản phẩm', 'Ảnh', 'Giá bán', 'Giá cũ', 'Thương hiệu', 'Trạng thái', 'Tạo bởi', 'Cập nhật bởi', 'Hành động'];
-
-  const renderers = useMemo(() => ({
-    name: (item: Product) => <span className="font-semibold text-[var(--color-text)]">{item.name}</span>,
-    image: (item: Product) => <img className="w-[60px] h-[60px] rounded-[6px] object-cover mx-auto border border-[#E5E7EB]" src={item.image} alt={item.name} />,
-    price: (item: Product) => <span className="font-bold text-[#EF3826]">{item.price}</span>,
-    oldPrice: (item: Product) => <span className="text-[#9CA3AF] line-through text-[13px]">{item.oldPrice}</span>,
-    brand: (item: Product) => <span className="font-medium bg-gray-100 px-2 py-1 rounded text-[12px] text-gray-600">{item.brand}</span>,
-    status: (item: Product) => (
-      <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-[8px] ${getStatusClass(item.status)}`}>
-        {item.status}
-      </span>
-    ),
-    createdBy: (item: Product) => (
-      <div>
-        <div className="font-medium">{item.createdBy}</div><div className="text-[12px] text-gray-500">
-          {item.createdAt}
-        </div>
-      </div>
-    ),
-    updatedBy: (item: Product) => (<div><div className="font-medium">{item.updatedBy}</div><div className="text-[12px] text-gray-500">{item.updatedAt}</div></div>),
-  }), []);
-
-  // Handlers
   const handleSelectAll = (e: ChangeEvent<HTMLInputElement>) => {
     setSelectedItems(e.target.checked ? data.map(item => item.id) : []);
   };
@@ -107,8 +93,85 @@ export default function ProductPage() {
       setShowDeleteConfirm(false);
       setItemToDelete(null);
       setSelectedItems(prev => prev.filter(id => id !== itemToDelete));
+      toast.success("Đã đưa sản phẩm vào thùng rác");
     }
   };
+
+  // 3. Table Renderers
+  const tableHeaderList = [
+    'Tên sản phẩm',
+    'Ảnh',
+    'Giá bán',
+    'Giá cũ',
+    'Thương hiệu',
+    'Trạng thái',
+    'Tạo bởi',
+    'Cập nhật bởi',
+    'Hành động'
+  ];
+
+  const renderers = useMemo(() => ({
+    name: (item: Product) =>
+      <span className="font-semibold text-[var(--color-text)]">
+        {item.name}
+      </span>,
+    image: (item: Product) =>
+      <img
+        className="w-[60px] h-[60px] rounded-[6px] object-cover mx-auto border border-[#E5E7EB]"
+        src={item.image}
+        alt={item.name}
+      />,
+    price: (item: Product) =>
+      <span className="font-bold text-[#EF3826]">
+        {item.price}
+      </span>,
+    oldPrice: (item: Product) =>
+      <span className="text-[#9CA3AF] line-through text-[13px]">
+        {item.oldPrice}
+      </span>,
+    brand: (item: Product) =>
+      <span className="font-medium bg-gray-100 px-2 py-1 rounded text-[12px] text-gray-600">
+        {item.brand}
+      </span>,
+
+    // Renderer mới cho Status: Sử dụng thẻ select để cập nhật nhanh
+    status: (item: Product) => (
+      <select
+        value={item.status}
+        onChange={(e) => handleStatusChange(item.id, e.target.value)}
+        className={`px-3 py-1 text-sm font-semibold rounded-[8px] border-none outline-none cursor-pointer transition-colors ${item.status === "Hoạt động"
+          ? "bg-[#D1FAE5] text-[#065F46]"
+          : "bg-[#FEE2E2] text-[#991B1B]"
+          }`}
+      >
+        <option
+          value="Hoạt động"
+          className="bg-white text-[#000000] cursor-pointer"
+        >
+          Hoạt động
+        </option>
+        <option
+          value="Tạm dừng"
+          className="bg-white text-[#000000] cursor-pointer"
+        >
+          Tạm dừng
+        </option>
+      </select>
+    ),
+
+    createdBy: (item: Product) => (
+      <div>
+        <div className="font-medium">{item.createdBy}</div>
+        <div className="text-[12px] text-gray-500">{item.createdAt}</div>
+      </div>
+    ),
+    updatedBy: (item: Product) => (
+      <div>
+        <div className="font-medium">{item.updatedBy}</div>
+        <div className="text-[12px] text-gray-500">{item.updatedAt}</div>
+      </div>
+    ),
+  }), [data]); // data được thêm vào dependency để renderer cập nhật khi state data thay đổi
 
   return (
     <main>
@@ -118,7 +181,6 @@ export default function ProductPage() {
 
       <Breadcrumb crumbs={[{ name: "Trang chủ", link: "/" }, { name: "Sản phẩm" }]} />
 
-      {/* Sử dụng Shared Filter */}
       <Filter
         status={status} setStatus={setStatus}
         creator={creator} setCreator={setCreator}
@@ -127,10 +189,8 @@ export default function ProductPage() {
         onClear={handleClearFilters}
       />
 
-      {/* Sử dụng Shared ActionBar */}
       <ActionBar createLink="/product/create" trashLink="/product/trash" />
 
-      {/* Table Section */}
       <div className="mb-[15px]">
         <Table<Product>
           tableHeaderList={tableHeaderList}
@@ -139,16 +199,15 @@ export default function ProductPage() {
           handleSelectAll={handleSelectAll}
           handleSelectItem={handleSelectItem}
           handleDeleteClick={handleDeleteClick}
+          handleStatusChange={handleStatusChange} // Truyền prop mới vào Table
           updateLink="/product/update"
           renderers={renderers}
           centeredColumns={[1, 4, 5, 8]}
         />
       </div>
 
-      {/* Sử dụng Shared Pagination */}
       <Pagination total={78} />
 
-      {/* Sử dụng Shared Delete Modal */}
       <DeleteModal
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}

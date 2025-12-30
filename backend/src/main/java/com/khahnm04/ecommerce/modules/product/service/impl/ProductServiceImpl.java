@@ -14,7 +14,7 @@ import com.khahnm04.ecommerce.shared.dto.PageResponse;
 import com.khahnm04.ecommerce.modules.product.dto.response.ProductVariantResponse;
 import com.khahnm04.ecommerce.modules.brand.entity.Brand;
 import com.khahnm04.ecommerce.modules.category.entity.Category;
-import com.khahnm04.ecommerce.modules.category.entity.ProductCategory;
+import com.khahnm04.ecommerce.modules.product.entity.ProductCategory;
 import com.khahnm04.ecommerce.core.exception.AppException;
 import com.khahnm04.ecommerce.core.exception.ErrorCode;
 import com.khahnm04.ecommerce.modules.product.mapper.ProductFaqMapper;

@@ -1,10 +1,11 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
-import { useEffect, useRef } from 'react';
-import * as FilePond from 'filepond';
-import 'filepond/dist/filepond.min.css';
-import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
-import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
-import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css';
+import { useEffect, useRef } from "react";
+import * as FilePond from "filepond";
+import "filepond/dist/filepond.min.css";
+import FilePondPluginImagePreview from "filepond-plugin-image-preview";
+import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
+import "filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css";
 
 FilePond.registerPlugin(
   FilePondPluginImagePreview,
@@ -15,34 +16,56 @@ interface FilePondWrapperProps {
   id?: string;
   name: string;
   accept?: string;
-  className?: string; // Thêm className để linh hoạt styling
-  // Có thể thêm defaultValue nếu muốn load ảnh cũ
+  className?: string;
+  onFileChange?: (files: File[]) => void;
 }
 
-export const FilePondWrapper = ({ id, name, accept, className }: FilePondWrapperProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+export const FilePondWrapper = ({
+  id,
+  name,
+  accept,
+  className,
+  onFileChange,
+}: FilePondWrapperProps) => {
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const pondRef = useRef<FilePond.FilePond | null>(null);
+  const initializedRef = useRef(false); // chống StrictMode
 
   useEffect(() => {
-    if (inputRef.current) {
-      const instance = FilePond.create(inputRef.current, {
-        labelIdle: "+", // Có thể thay bằng icon hoặc text tùy chỉnh
-        acceptedFileTypes: accept ? accept.split(',') : [],
-        storeAsFile: true, // Quan trọng: Giúp form lấy được file object thay vì base64
-      });
+    if (!inputRef.current) return;
+    if (initializedRef.current) return;
 
-      return () => {
-        instance.destroy();
-      };
-    }
-  }, [accept]);
+    initializedRef.current = true;
+
+    pondRef.current = FilePond.create(inputRef.current, {
+      labelIdle: "+",
+      acceptedFileTypes: accept ? accept.split(",") : [],
+      storeAsFile: true,
+      onupdatefiles: (fileItems) => {
+        const files = fileItems
+          .map((item) => item.file)
+          .filter(Boolean) as File[];
+
+        onFileChange?.(files);
+      },
+    });
+
+    return () => {
+      if (pondRef.current) {
+        pondRef.current.destroy();
+        pondRef.current = null;
+        initializedRef.current = false;
+      }
+    };
+  }, []);
 
   return (
     <div className={className}>
       <input
+        ref={inputRef}
         type="file"
         name={name}
         id={id}
-        ref={inputRef}
         accept={accept}
       />
     </div>

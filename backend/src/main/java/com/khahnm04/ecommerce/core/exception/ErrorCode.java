@@ -47,6 +47,9 @@ public enum ErrorCode {
     CATEGORY_HAS_CHILDREN(1205, "Cannot delete request because it has child categories.", HttpStatus.BAD_REQUEST),
     CANNOT_MOVE_PARENT_TO_CHILD(1206, "Cannot move parent to child", HttpStatus.BAD_REQUEST),
     DUPLICATE_CATEGORY_PRODUCT(1207, "Duplicate request product", HttpStatus.BAD_REQUEST),
+    CATEGORY_HAS_PRODUCTS(1208, "Cannot delete request products", HttpStatus.BAD_REQUEST),
+    BULK_ACTION_REQUIRED_IDS(1209, "At least one category must be selected", HttpStatus.BAD_REQUEST),
+    INVALID_BULK_ACTION(1210, "The requested bulk action is invalid", HttpStatus.BAD_REQUEST),
 
     BRAND_NOT_FOUND(1300, "brand not found", HttpStatus.NOT_FOUND),
     BRAND_EXISTED(1301, "brand already existed", HttpStatus.CONFLICT),
