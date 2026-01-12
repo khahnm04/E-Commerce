@@ -1,4 +1,4 @@
-# 🛒 E-Commerce Platform (Fullstack Spring Boot & Next.js)
+# 🛒 E-Commerce Platform
 
 A full-featured E-Commerce platform built with modern architecture, completely separating Backend and Frontend. The system includes a powerful RESTful API handling complex business logic and two separate user interfaces for Customers (Storefront) and Administrators (Admin Dashboard).
 
