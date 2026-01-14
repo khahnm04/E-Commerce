@@ -10,6 +10,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 public class PermissionResponse implements Serializable {
 
+    private Long id;
     private String name;
     private String description;
 

@@ -5,6 +5,8 @@ import com.khahnm04.ecommerce.modules.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,8 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "product_questions")
+//@SQLDelete(sql = "UPDATE product_questions SET deleted_at = true WHERE id = ?")
+//@SQLRestriction("deleted = false")
 public class ProductQuestion {
 
     @Id
@@ -35,7 +39,7 @@ public class ProductQuestion {
     private Product product;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)

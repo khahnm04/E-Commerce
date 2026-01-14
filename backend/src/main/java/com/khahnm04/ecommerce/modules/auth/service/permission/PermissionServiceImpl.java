@@ -20,9 +20,10 @@ public class PermissionServiceImpl implements PermissionService {
         List<Permission> permissions = permissionRepository.findAll();
         return permissions.stream()
                 .map(permission -> PermissionResponse.builder()
-                            .name(permission.getName())
-                            .description(permission.getDescription())
-                            .build())
+                        .id(permission.getId())
+                        .name(permission.getName())
+                        .description(permission.getDescription())
+                        .build())
                 .toList();
     }
 

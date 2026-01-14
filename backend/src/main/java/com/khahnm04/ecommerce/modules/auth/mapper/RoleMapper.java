@@ -13,7 +13,6 @@ public interface RoleMapper {
 
     RoleResponse toRoleResponse(Role role);
 
-    @Mapping(target = "name", ignore = true)
     @Mapping(target = "permissions", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     void updateRole(@MappingTarget Role role, RoleRequest request);

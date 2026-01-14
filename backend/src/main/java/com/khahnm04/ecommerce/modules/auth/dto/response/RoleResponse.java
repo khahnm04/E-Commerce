@@ -11,6 +11,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class RoleResponse implements Serializable {
 
+    private Long id;
     private String name;
     private String description;
     private Set<PermissionResponse> permissions;

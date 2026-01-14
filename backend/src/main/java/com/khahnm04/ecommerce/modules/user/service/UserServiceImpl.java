@@ -50,7 +50,8 @@ public class UserServiceImpl implements UserService {
         if (userRepository.existsByPhoneNumber(request.getPhoneNumber())) {
             throw new AppException(ErrorCode.PHONE_NUMBER_EXISTED);
         }
-        if (StringUtils.hasText(request.getEmail()) && userRepository.existsByEmail(request.getEmail())) {
+        if (StringUtils.hasText(request.getEmail())
+                && userRepository.existsByEmail(request.getEmail())) {
             throw new AppException(ErrorCode.EMAIL_EXISTED);
         }
 
@@ -126,9 +127,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void softDeleteUser(Long id) {
-        User user = getUserById(id);
-        user.setDeletedAt(LocalDateTime.now());
-        userRepository.save(user);
+        userRepository.delete(getUserById(id));
         log.info("User soft deleted with id {}", id);
     }
 
@@ -237,7 +236,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new AppException(ErrorCode.ADDRESS_NOT_FOUND));
     }
 
-    private void assignRoleToUser(User user, Set<String> roleNames) {
+    private void assignRoleToUser(User user, Set<Long> roleNames) {
         Set<Role> roles = Optional.ofNullable(roleNames)
                 .orElseGet(Collections::emptySet)
                 .stream()

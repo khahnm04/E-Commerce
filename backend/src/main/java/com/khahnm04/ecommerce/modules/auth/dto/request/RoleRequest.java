@@ -20,6 +20,6 @@ public class RoleRequest implements Serializable {
     private String description;
 
     @NotEmpty(message = "permissions cannot be blank")
-    private Set<String> permissions;
+    private Set<Long> permissions;
 
 }

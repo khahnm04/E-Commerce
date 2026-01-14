@@ -1,17 +1,21 @@
 package com.khahnm04.ecommerce.modules.user.entity;
 
+import com.khahnm04.ecommerce.modules.cart.entity.Cart;
+import com.khahnm04.ecommerce.modules.product.entity.ProductQuestion;
 import com.khahnm04.ecommerce.shared.enums.AuthProvider;
 import com.khahnm04.ecommerce.shared.enums.Gender;
 import com.khahnm04.ecommerce.shared.enums.UserStatus;
 import com.khahnm04.ecommerce.shared.entity.BaseEntity;
 import com.khahnm04.ecommerce.modules.auth.entity.Role;
 import com.khahnm04.ecommerce.modules.product.entity.Wishlist;
-import jakarta.persistence.*;
-import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import jakarta.persistence.*;
+import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -25,12 +29,14 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
+@SQLDelete(sql = "UPDATE users SET deleted_at = NOW() WHERE id = ?")
+@SQLRestriction("deleted_at IS NULL")
 public class User extends BaseEntity<Long> implements UserDetails {
 
     @Column(name = "email", unique = true)
     private String email;
 
-    @Column(name = "phone_number", unique = true, length = 15)
+    @Column(name = "phone_number", nullable = false, unique = true, length = 20)
     private String phoneNumber;
 
     @Column(name = "password", length = 500)
@@ -74,6 +80,9 @@ public class User extends BaseEntity<Long> implements UserDetails {
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
+    @Column(name = "login_ip", length = 50)
+    private String loginIp;
+
     @ManyToMany
     @JoinTable(
         name = "user_roles",
@@ -83,8 +92,15 @@ public class User extends BaseEntity<Long> implements UserDetails {
     @OrderBy("name ASC")
     private Set<Role> roles;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Address> addresses;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<ProductQuestion> productQuestions;
+
+    public void removeQuestion(ProductQuestion question) {
+        this.productQuestions.remove(question);
+    }
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Wishlist> wishlists;

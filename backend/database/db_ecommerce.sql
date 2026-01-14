@@ -1,12 +1,35 @@
 create database db_ecommerce;
 use db_ecommerce;
 
+-- Bảng branches
+CREATE TABLE branches (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    address_detail VARCHAR(255) NOT NULL,  -- VD: Số 11, Ngõ 2
+    ward VARCHAR(100),                     -- VD: Phường Trung Liệt
+    district VARCHAR(100) NOT NULL,        -- VD: Quận Đống Đa
+    city VARCHAR(100) NOT NULL,
+    latitude DECIMAL(10, 8),               -- Vĩ độ
+    longitude DECIMAL(11, 8),              -- Kinh độ
+    phone_number VARCHAR(20) NOT NULL,
+    email VARCHAR(255),                    -- Email nhận đơn/khiếu nại của riêng chi nhánh
+    image_url VARCHAR(500),                -- Ảnh mặt tiền cửa hàng
+    opening_hours VARCHAR(255),            -- VD: "8:00 - 21:30"
+    status ENUM('ACTIVE', 'INACTIVE', 'RENOVATING') DEFAULT 'ACTIVE', -- Thêm trạng thái "Đang sửa chữa"
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    created_by BIGINT,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by BIGINT,
+    deleted_at DATETIME
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- Bảng users
 CREATE TABLE users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) UNIQUE,            -- Email (Quan trọng)
-    phone_number VARCHAR(15) UNIQUE,      -- SĐT (Quan trọng)
-    password VARCHAR(500) NULL,           -- NULL nếu login bằng Google/FB
+    email VARCHAR(255) UNIQUE,
+    phone_number VARCHAR(20) NOT NULL UNIQUE,
+    password VARCHAR(500),
     full_name VARCHAR(255) NOT NULL,
     date_of_birth DATE,
     gender ENUM('MALE', 'FEMALE', 'UNKNOWN') DEFAULT 'UNKNOWN',
@@ -16,48 +39,52 @@ CREATE TABLE users (
     is_phone_verified BOOLEAN DEFAULT FALSE,
     status ENUM('ACTIVE', 'INACTIVE', 'BANNED', 'LOCKED') DEFAULT 'ACTIVE',
     last_login_at DATETIME,               -- Lần cuối đăng nhập
-    -- login_ip VARCHAR(50),                 -- IP lần cuối đăng nhập (để trace hack)
-    -- branch_id BIGINT,
+    login_ip VARCHAR(50),                 -- IP lần cuối đăng nhập (để trace hack)
+    branch_id BIGINT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     updated_by BIGINT,
-    deleted_at DATETIME
-    -- CONSTRAINT fk_user__branchs FOREIGN KEY (branch_id) REFERENCES branchs(id) ON DELETE CASCADE
+    deleted_at DATETIME,
+    CONSTRAINT fk_user__branches FOREIGN KEY (branch_id) REFERENCES branches(id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng role
 CREATE TABLE roles (
-	name VARCHAR(255) PRIMARY KEY,
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at DATETIME
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng user_roles
 CREATE TABLE user_roles (
     user_id BIGINT NOT NULL,
-    role_name VARCHAR(255) NOT NULL,
+    role_id BIGINT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (user_id, role_name),
+    PRIMARY KEY (user_id, role_id),
     CONSTRAINT fk_user_roles__users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_user_roles__roles FOREIGN KEY (role_name) REFERENCES roles(name)
+    CONSTRAINT fk_user_roles__roles FOREIGN KEY (role_id) REFERENCES roles(id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng permission
 CREATE TABLE permissions (
-	name VARCHAR(255) PRIMARY KEY,
+	id BIGINT AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(255) NOT NULL,
     description TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng role_permissions
 CREATE TABLE role_permissions (
-	role_name VARCHAR(255) NOT NULL,
-    permission_name VARCHAR(255) NOT NULL,
+	role_id BIGINT NOT NULL,
+    permission_id BIGINT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (role_name, permission_name),
-    CONSTRAINT fk_role_permissions__roles FOREIGN KEY (role_name) REFERENCES roles(name) ON DELETE CASCADE,
-    CONSTRAINT fk_role_permissions__permissions FOREIGN KEY (permission_name) REFERENCES permissions(name)
+    PRIMARY KEY (role_id, permission_id),
+    CONSTRAINT fk_role_permissions__roles FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE,
+    CONSTRAINT fk_role_permissions__permissions FOREIGN KEY (permission_id) REFERENCES permissions(id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng address
@@ -78,7 +105,7 @@ CREATE TABLE addresses (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     updated_by BIGINT,
     deleted_at DATETIME,
-    CONSTRAINT fk_addresses__users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    CONSTRAINT fk_addresses__users FOREIGN KEY (user_id) REFERENCES users(id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- bảng brands
@@ -140,8 +167,8 @@ CREATE TABLE products (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     slug VARCHAR(255) NOT NULL UNIQUE,
-    price BIGINT NOT NULL,                -- Giá bán hiện tại (Thường là giá Min của variant)
-    old_price BIGINT DEFAULT NULL,        -- Cho phép NULL (Nếu không giảm giá)
+    price DECIMAL(15, 2) NOT NULL,                -- Giá bán hiện tại (Thường là giá Min của variant)
+    old_price DECIMAL(15, 2) DEFAULT NULL,        -- Cho phép NULL (Nếu không giảm giá)
     thumbnail TEXT NOT NULL,
     description LONGTEXT NOT NULL,
     brand_id BIGINT,
@@ -161,8 +188,8 @@ CREATE TABLE product_categories (
     category_id BIGINT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT,
-    CONSTRAINT fk_product_categories__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT fk_product_categories__categories FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE,
+    CONSTRAINT fk_product_categories__products FOREIGN KEY (product_id) REFERENCES products(id),
+    CONSTRAINT fk_product_categories__categories FOREIGN KEY (category_id) REFERENCES categories(id),
     UNIQUE (product_id, category_id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -177,7 +204,7 @@ CREATE TABLE product_images (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     updated_by BIGINT,
     deleted_at DATETIME,
-    CONSTRAINT fk_product_images__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    CONSTRAINT fk_product_images__products FOREIGN KEY (product_id) REFERENCES products(id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng attributes
@@ -203,8 +230,8 @@ CREATE TABLE product_attribute_values (
     created_by BIGINT,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     updated_by BIGINT,
-    CONSTRAINT fk_product_attribute_values__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT fk_product_attribute_values__attributes FOREIGN KEY (attribute_id) REFERENCES attributes(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_product_attribute_values__products FOREIGN KEY (product_id) REFERENCES products(id),
+    CONSTRAINT fk_product_attribute_values__attributes FOREIGN KEY (attribute_id) REFERENCES attributes(id),
     UNIQUE (product_id, attribute_id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -232,7 +259,7 @@ CREATE TABLE variant_values (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     updated_by BIGINT,
     deleted_at DATETIME,
-    CONSTRAINT fk_variant_values__variants FOREIGN KEY (variant_id) REFERENCES variants(id) ON DELETE CASCADE,
+    CONSTRAINT fk_variant_values__variants FOREIGN KEY (variant_id) REFERENCES variants(id),
     UNIQUE (variant_id, value)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -241,15 +268,15 @@ CREATE TABLE product_variants (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     product_id BIGINT NOT NULL,
     sku VARCHAR(255) NOT NULL UNIQUE, -- VD: IP15-PRO-BLK-256
-    price BIGINT NOT NULL,
-    old_price BIGINT DEFAULT NULL,
+    price DECIMAL(15, 2) NOT NULL,
+    old_price DECIMAL(15, 2) DEFAULT NULL,
     image TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     updated_by BIGINT,
     deleted_at DATETIME,
-    CONSTRAINT fk_product_variants__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    CONSTRAINT fk_product_variants__products FOREIGN KEY (product_id) REFERENCES products(id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng product_variant_values
@@ -259,8 +286,8 @@ CREATE TABLE product_variant_values (
     variant_value_id BIGINT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT,
-    CONSTRAINT fk_product_variant_values__product_variants FOREIGN KEY (product_variant_id) REFERENCES product_variants(id) ON DELETE CASCADE,
-    CONSTRAINT fk_product_variant_values__variant_values FOREIGN KEY (variant_value_id) REFERENCES variant_values(id) ON DELETE CASCADE,
+    CONSTRAINT fk_product_variant_values__product_variants FOREIGN KEY (product_variant_id) REFERENCES product_variants(id),
+    CONSTRAINT fk_product_variant_values__variant_values FOREIGN KEY (variant_value_id) REFERENCES variant_values(id),
     UNIQUE (product_variant_id, variant_value_id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -276,7 +303,7 @@ CREATE TABLE product_faqs (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     updated_by BIGINT,
     deleted_at DATETIME,
-    CONSTRAINT fk_product_faqs__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    CONSTRAINT fk_product_faqs__products FOREIGN KEY (product_id) REFERENCES products(id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng wishlists
@@ -285,8 +312,8 @@ CREATE TABLE wishlists (
     user_id BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_wishlists__users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    CONSTRAINT fk_wishlists__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    CONSTRAINT fk_wishlists__users FOREIGN KEY (user_id) REFERENCES users(id),
+    CONSTRAINT fk_wishlists__products FOREIGN KEY (product_id) REFERENCES products(id),
     UNIQUE (user_id, product_id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -299,24 +326,9 @@ CREATE TABLE product_questions (
     content TEXT NOT NULL,
     is_admin_reply BOOLEAN DEFAULT FALSE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_product_questions__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
-    CONSTRAINT fk_product_questions__users FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT fk_product_questions__products FOREIGN KEY (product_id) REFERENCES products(id),
+    CONSTRAINT fk_product_questions__users FOREIGN KEY (user_id) REFERENCES users(id),
     CONSTRAINT fk_product_questions__parents FOREIGN KEY (parent_id) REFERENCES product_questions(id) ON DELETE SET NULL
-) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
--- Bảng branches
-CREATE TABLE branches (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE, -- Tên chi nhánh (VD: CellphoneS Thái Hà)
-    address VARCHAR(255) NOT NULL, -- Địa chỉ cụ thể (VD: 11 Thái Hà, Đống Đa)
-    city VARCHAR(255) NOT NULL, -- Thành phố/Tỉnh (Quan trọng để khách lọc nhanh: Hà Nội, HCM...)
-    phone_number VARCHAR(20),
-    status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    created_by BIGINT,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    updated_by BIGINT,
-    deleted_at DATETIME
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng inventories
@@ -341,7 +353,7 @@ CREATE TABLE stock_movements (
     note TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT,
-    CONSTRAINT fk_movements__inventories FOREIGN KEY (inventory_id) REFERENCES inventories(id) ON DELETE CASCADE
+    CONSTRAINT fk_stock_movements__inventories FOREIGN KEY (inventory_id) REFERENCES inventories(id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- Bảng carts
@@ -389,7 +401,7 @@ CREATE TABLE orders (
     order_code VARCHAR(255) NOT NULL UNIQUE,
     user_id BIGINT NOT NULL,
     branch_id BIGINT NOT NULL,
-    total_amount BIGINT NOT NULL,
+    total_amount DECIMAL(15, 2) NOT NULL,
     order_status ENUM(
 		'PENDING',          -- Chờ xử lý
 		'CONFIRMED',        -- Đã xác nhận
@@ -423,7 +435,7 @@ CREATE TABLE order_details (
 	id BIGINT AUTO_INCREMENT PRIMARY KEY,
 	order_id BIGINT NOT NULL,
 	product_variant_id BIGINT NOT NULL,
-    unit_price BIGINT NOT NULL,
+    unit_price DECIMAL(15, 2) NOT NULL,
     quantity BIGINT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT,
@@ -456,7 +468,7 @@ CREATE TABLE payments (
     order_id BIGINT NOT NULL,                  -- Liên kết đơn hàng
     payment_method ENUM('CASH','CARD','TRANSFER','WALLET') NOT NULL,
 	payment_status ENUM('UNPAID','PAID','REFUNDED') DEFAULT 'UNPAID',
-    amount BIGINT NOT NULL,                    -- Số tiền thanh toán
+    amount DECIMAL(15, 2) NOT NULL,                    -- Số tiền thanh toán
     transaction_code VARCHAR(255),             -- Mã giao dịch từ ngân hàng/cổng thanh toán
     paid_at DATETIME,                          -- Thời gian thanh toán
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -485,8 +497,8 @@ CREATE TABLE news_products (
     product_id BIGINT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT,
-    CONSTRAINT fk_news_products__news FOREIGN KEY (news_id) REFERENCES news(id) ON DELETE CASCADE,
-    CONSTRAINT fk_news_products__products FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    CONSTRAINT fk_news_products__news FOREIGN KEY (news_id) REFERENCES news(id),
+    CONSTRAINT fk_news_products__products FOREIGN KEY (product_id) REFERENCES products(id),
     UNIQUE (news_id, product_id)
 ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -497,7 +509,7 @@ id BIGINT AUTO_INCREMENT PRIMARY KEY,
     image TEXT NOT NULL,
     link_url VARCHAR(500),
     position VARCHAR(50) NOT NULL DEFAULT 'HOME_SLIDER',
-    display_order INT DEFAULT 0,         -- Số càng nhỏ càng ưu tiên hiện trước
+    display_order INT DEFAULT 0, 
     status ENUM('ACTIVE', 'INACTIVE') DEFAULT 'ACTIVE',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_by BIGINT,
@@ -508,3 +520,5 @@ id BIGINT AUTO_INCREMENT PRIMARY KEY,
 
 
 
+-- 1. check relationship db match draw.io
+-- 2. check attribute entity in backend match attribute in database

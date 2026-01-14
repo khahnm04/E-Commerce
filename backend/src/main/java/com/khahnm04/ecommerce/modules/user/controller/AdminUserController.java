@@ -1,5 +1,6 @@
 package com.khahnm04.ecommerce.modules.user.controller;
 
+import com.khahnm04.ecommerce.core.exception.ServiceValidationException;
 import com.khahnm04.ecommerce.shared.enums.UserStatus;
 import com.khahnm04.ecommerce.modules.user.dto.request.UserRequest;
 import com.khahnm04.ecommerce.shared.dto.ApiResponse;
@@ -11,7 +12,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @Slf4j
@@ -22,11 +25,15 @@ public class AdminUserController {
 
     private final UserService userService;
 
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<UserResponse> createUser(
-            @Valid @RequestBody UserRequest request
+            @Valid @RequestBody UserRequest request,
+            @RequestPart(value = "avatar", required = false) MultipartFile avatar
     ) {
+        if (avatar == null || avatar.isEmpty()) {
+            throw new ServiceValidationException("image", "image cannot be null");
+        }
         return ApiResponse.<UserResponse>builder()
                 .data(userService.createUser(request))
                 .message("user created successfully")

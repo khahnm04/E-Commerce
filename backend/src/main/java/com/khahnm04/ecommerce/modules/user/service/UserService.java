@@ -10,7 +10,6 @@ import com.khahnm04.ecommerce.shared.dto.PageResponse;
 import com.khahnm04.ecommerce.modules.user.dto.response.UserResponse;
 import com.khahnm04.ecommerce.shared.enums.UserStatus;
 import com.khahnm04.ecommerce.modules.user.entity.User;
-
 import java.util.List;
 
 public interface UserService {

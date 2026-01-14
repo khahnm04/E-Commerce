@@ -32,7 +32,7 @@ public class RoleServiceImpl implements RoleService {
         Role role = roleMapper.toRole(request);
         assignPermissionsToRole(role, request.getPermissions());
         role = roleRepository.save(role);
-        log.info("UserRole created with name = {}", role.getName());
+        log.info("Role created with name: {}", role.getName());
         return roleMapper.toRoleResponse(role);
     }
 
@@ -45,27 +45,27 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public RoleResponse updateRole(String name, RoleRequest request) {
-        Role role = getRoleById(name);
+    public RoleResponse updateRole(Long id, RoleRequest request) {
+        Role role = getRoleById(id);
         roleMapper.updateRole(role, request);
         assignPermissionsToRole(role, request.getPermissions());
         role = roleRepository.save(role);
-        log.info("UserRole updated successfully with id = {}", name);
+        log.info("Role updated with name: {}", id);
         return roleMapper.toRoleResponse(role);
     }
 
     @Override
-    public void deleteRole(String name) {
-        roleRepository.delete(getRoleById(name));
-        log.info("UserRole deleted successfully with name: {}", name);
+    public void deleteRole(Long id) {
+        roleRepository.delete(getRoleById(id));
+        log.info("Role deleted with name: {}", id);
     }
 
-    private Role getRoleById(String name) {
-        return roleRepository.findById(name)
+    private Role getRoleById(Long id) {
+        return roleRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.ROLE_NOT_FOUND));
     }
 
-    private void assignPermissionsToRole(Role role, Set<String> permissionNames) {
+    private void assignPermissionsToRole(Role role, Set<Long> permissionNames) {
         Set<Permission> permissions = Optional.ofNullable(permissionNames)
                 .orElseGet(Collections::emptySet)
                 .stream()
